@@ -1,0 +1,49 @@
+一、nacos
+1. 初始化目录
+mkdir -p /mnt/mydata/nacos/logs
+mkdir -p /mnt/mydata/nacos/init.d/
+touch /mnt/mydata/nacos/init.d/custom.properties
+vim /mnt/mydata/nacos/init.d/custom.properties
+【custom.properties】
+server.contextPath=/nacos
+server.servlet.contextPath=/nacos
+server.port=8848
+spring.datasource.platform=mysql
+db.num=1
+db.url.0=jdbc:mysql://xx.xx.xx.x:3306/nacos_devtest_prod?characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true
+db.user=user
+db.password=pass
+nacos.cmdb.dumpTaskInterval=3600
+nacos.cmdb.eventTaskInterval=10
+nacos.cmdb.labelTaskInterval=300
+nacos.cmdb.loadDataAtStart=false
+management.metrics.export.elastic.enabled=false
+management.metrics.export.influx.enabled=false
+server.tomcat.accesslog.enabled=true
+server.tomcat.accesslog.pattern=%h %l %u %t "%r" %s %b %D %{User-Agent}i
+nacos.security.ignore.urls=/,/**/*.css,/**/*.js,/**/*.html,/**/*.map,/**/*.svg,/**/*.png,/**/*.ico,/console-fe/public/**,/v1/auth/login,/v1/console/health/**,/v1/cs/**,/v1/ns/**,/v1/cmdb/**,/actuator/**,/v1/console/server/**
+nacos.naming.distro.taskDispatchThreadCount=1
+nacos.naming.distro.taskDispatchPeriod=200
+nacos.naming.distro.batchSyncKeyCount=1000
+nacos.naming.distro.initDataRatio=0.9
+nacos.naming.distro.syncRetryDelay=5000
+nacos.naming.data.warmup=true
+nacos.naming.expireInstance=true
+2. 执行nacos-mysql.sql
+\nacos\conf\nacos-mysql.sql
+3. 执行命令
+docker run --name nacos -d -p 8848:8848 --privileged=true --restart=always -e JVM_XMS=256m -e JVM_XMX=256m -e MODE=standalone -e PREFER_HOST_MODE=hostname -v /mnt/mydata/nacos/logs:/home/nacos/logs -v /mnt/mydata/nacos/init.d/custom.properties:/home/nacos/init.d/custom.properties nacos/nacos-server
+
+二、mysql
+1. 初始化目录
+mkdir -p /mnt/mydata/mysql/log
+mkdir -p /mnt/mydata/mysql/data
+mkdir -p /mnt/mydata/mysql/conf
+2. 执行命令
+docker run --name mysql -d -e MYSQL_ROOT_PASSWORD=123456 -p 3306:3306 --restart=always -v /mnt/mydata/mysql/log:/var/log/mysql -v /mnt/mydata/mysql/data:/var/lib/mysql -v /mnt/mydata/mysql/conf/conf.d:/etc/mysql/conf.d mysql
+
+三、redis
+docker run --name redis -d -p 6379:6379 --restart=always redis:latest redis-server --appendonly yes --requirepass 123456
+
+
+

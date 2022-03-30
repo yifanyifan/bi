@@ -4,28 +4,21 @@ spring:
   cloud:
     nacos:
       config:
-        server-addr: 192.168.81.33:8848
-        namespace: 07f4721e-58fd-4257-a2f8-6ec29b5ea247
-        # server-addr: nacos.stms.com:80
-        # namespace: 759555ae-beaf-4abb-bf50-d0a55958b105
+        server-addr: 60.205.176.169:8848
+        namespace: 6bed7004-0aa2-4e7f-963b-1ce7a850235f
         file-extension: yaml
         shared-configs:
           - bi-redis.yaml
       discovery:
-        server-addr: 192.168.81.33:8848
-        namespace: 07f4721e-58fd-4257-a2f8-6ec29b5ea247
-        # server-addr: nacos.stms.com:80
-        # namespace: 759555ae-beaf-4abb-bf50-d0a55958b105
+        server-addr: 60.205.176.169:8848
+        namespace: 6bed7004-0aa2-4e7f-963b-1ce7a850235f
         metadata:
           management:
             context-path: ${server.servlet.context-path}/actuator
   datasource:
-    url: jdbc:mysql://10.0.44.120:33067/bi_data_management_dev?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8
-    username: bi_dev
-    password: 8A3yBPZeEKlyvWNO
-#    url: jdbc:mysql://10.0.44.120:33067/bi_data_management_dev2?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8
-#    username: bi_dev2
-#    password: bBnmU0BDLCOUM9Dl
+    url: jdbc:mysql://60.205.176.169:3306/bi_data_management_dev?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8
+    username: root
+    password: 123456
   profiles:
     active: dev
 
