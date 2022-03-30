@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: bi-data-management
+  cloud:
+    nacos:
+      config:
+        server-addr: nacos.stnts.com:30080
+        namespace: c05d9d31-0890-4612-b662-cfe04a0cf1fd
+        file-extension: yaml
+        shared-configs:
+          - bi-redis.yaml
+      discovery:
+        server-addr: nacos.stnts.com:30080
+        namespace: c05d9d31-0890-4612-b662-cfe04a0cf1fd
+        metadata:
+          management:
+            context-path: ${server.servlet.context-path}/actuator
+  datasource:
+    url: jdbc:mysql://db-master-bi-dev.stnts.com:33066/bi_data_management?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8
+    username: bi_dm_user_rw
+    password: tO4aEjqOoPvumyfc
+  profiles:
+    active: pre
+
+data-management:
+  setting:
+    appId: orderSystem
+    appSecret: jy0Neokx
+    appId2: orderGeneral # 查询条件必填【通用API】
+    appSecret2: yFsKpMpc
+    uams:
+      interface:
+        address: api.ehome.stnts.com
+        secret: olap9KuKj&7y=UyH
+        appId: OLAP
+    add-cooperator-url: http://bi-test.stnts.com:8089/add-cooperator
+    youtop-api-host: http://youtop-dsp-backend.test
+    crm-channel-api-host: http://channel-sales-test.stnts.com
+    crm-general-api-host: http://game-crm-manage-test.stnts.com

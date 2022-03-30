@@ -1,0 +1,82 @@
+{
+  "id": "sdk-pageAnalysis-v2-sourcePage-90",
+  "chartName":"来源页面",
+  "chartType": "table",
+  "databaseName": "banyan_bi_sdk",
+  "tableName": "view_sdk_app_sdk_web_session",
+  "dimension": [
+    {
+      "name": "parent_page_domain",
+      "group": "",
+      "aliasName": "来源页面"
+    }
+  ],
+  "measure": [
+    {
+      "name": "pv",
+      "func": "sum",
+      "contrast": "",
+      "aliasName": "贡献浏览量",
+      "order": -1
+    },
+    {
+      "name": "count(distinct session)",
+      "func": "",
+      "contrast": "",
+      "aliasName": "访问次数",
+      "order": -1
+    },
+    {
+      "name": "count(distinct uv)",
+      "func": "",
+      "contrast": "",
+      "aliasName": "访客(UV)",
+      "order": -1
+    },
+    {
+      "name": "count(distinct if(user_type=0,uv,null))",
+      "func": "",
+      "contrast": "",
+      "aliasName": "老访客(UV)",
+      "order": -1
+    },
+    {
+      "name": "count(distinct if(user_type=1,uv,null))",
+      "func": "",
+      "contrast": "",
+      "aliasName": "新访客数",
+      "order": -1
+    },
+    {
+      "name": "count(distinct active_user)",
+      "func": "",
+      "contrast": "",
+      "aliasName": "活跃用户数",
+      "order": -1
+    },
+    {
+      "name": "sum(online_duration) / 60000 / count(distinct session)",
+      "func": "",
+      "contrast": "",
+      "aliasName": "平均访问时长(m)",
+      "order": -1
+    },
+    {
+      "name": "sum(online_duration) / 60000 / sum(pv)",
+      "func": "",
+      "contrast": "",
+      "aliasName": "平均页面停留时长(m)",
+      "order": -1
+    },
+    {
+      "name": "sum(pv) / count(distinct session)",
+      "func": "",
+      "contrast": "",
+      "aliasName": "平均访问深度",
+      "order": -1
+    }
+  ],
+  "dashboard": [
+
+  ]
+}

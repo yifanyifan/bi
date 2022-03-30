@@ -1,0 +1,26 @@
+{
+  "id": "sdk-pageAnalysis-v2-sourcePage-30",
+  "chartName":"来源页面",
+  "chartType": "table",
+  "databaseName": "banyan_bi_sdk",
+  "tableName": "view_sdk_app_sdk_web_session",
+  "dimension": [
+    {
+      "name": "parent_page_domain",
+      "group": "",
+      "aliasName": "来源页面"
+    }
+  ],
+  "measure": [
+    {
+      "name": "count(distinct if(user_type=0,uv,null))",
+      "func": "",
+      "contrast": "",
+      "aliasName": "老访客(UV)",
+      "order": -1
+    }
+  ],
+  "dashboard": [
+
+  ]
+}

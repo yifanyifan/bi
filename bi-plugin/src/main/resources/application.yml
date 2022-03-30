@@ -1,0 +1,16 @@
+server:
+  port: 18884
+  servlet:
+    context-path: /plugin
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  config: classpath:logback-spring.xml

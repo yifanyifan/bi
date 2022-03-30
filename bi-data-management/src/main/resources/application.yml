@@ -1,0 +1,18 @@
+spring:
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  resources:
+    static-locations: file:/webser/www/bi-data-management/static/
+
+logging:
+  file: /webser/www/bi-data-management/log/bi-data-management.log
+
+server:
+  port: 18885
+  servlet:
+    context-path: /datamanagement
+
+mybatis-plus:
+  mapper-locations:
+    classpath: /mapper/**/*.xml

@@ -1,0 +1,20 @@
+#配置生效的配置
+spring:
+  profiles:
+    active:
+    - prod
+  kafka:
+    consumer:
+      group-id: dt_monitor
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      batch-size: 65536
+      buffer-memory: 524288
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+#设置日志配置文件
+#logging:
+#  config: classpath:logback-spring.xml
+

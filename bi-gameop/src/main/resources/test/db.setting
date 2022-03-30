@@ -1,0 +1,16 @@
+## 可选配置
+# 是否在日志中显示执行的SQL
+showSql = true
+# 是否格式化显示的SQL
+formatSql = false
+# 是否显示SQL参数
+showParams = true
+
+## 基本配置信息
+[clickhouse]
+url = jdbc:clickhouse://wutongshu-test:8123
+username = readonly
+password = 8nUItJw15TSv
+driver = ru.yandex.clickhouse.ClickHouseDriver
+
+maximumPoolSize = 100

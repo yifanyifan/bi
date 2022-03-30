@@ -1,0 +1,20 @@
+## 可选配置
+# 是否在日志中显示执行的SQL
+showSql = true
+# 是否格式化显示的SQL
+formatSql = false
+# 是否显示SQL参数
+showParams = true
+
+## 基本配置信息
+[clickhouse21]
+url = jdbc:clickhouse://172.20.35.203:8123
+username = default
+password = ArtPzgI9xGlV
+driver = ru.yandex.clickhouse.ClickHouseDriver
+
+[clickhouse]
+url = jdbc:clickhouse://172.20.35.203:8123
+username = default
+password = ArtPzgI9xGlV
+driver = ru.yandex.clickhouse.ClickHouseDriver

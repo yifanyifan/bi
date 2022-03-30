@@ -1,0 +1,26 @@
+{
+  "id": "sdk-pageAnalysis-v2-entrancePage-50-linkage",
+  "chartName":"入口页面",
+  "chartType": "table",
+  "databaseName": "banyan_bi_sdk",
+  "tableName": "view_sdk_app_sdk_web_session",
+  "dimension": [
+    {
+      "name": "date",
+      "group": "#(group)",
+      "aliasName": "时间"
+    }
+  ],
+  "measure": [
+    {
+      "name": "count(distinct active_user)",
+      "func": "",
+      "contrast": "",
+      "aliasName": "活跃用户数",
+      "order": -1
+    }
+  ],
+  "dashboard": [
+
+  ]
+}

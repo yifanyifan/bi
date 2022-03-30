@@ -1,0 +1,23 @@
+spring:
+  profiles:
+    active:
+      - dev
+    include:
+      - swagger
+  application:
+    name: bi-plugin
+  cloud:
+    nacos:
+      config:
+        server-addr: 192.168.81.33:8848
+        namespace: 07f4721e-58fd-4257-a2f8-6ec29b5ea247
+        file-extension: yaml
+        shared-configs:
+        - bi-mysql.yaml
+        - bi-redis.yaml
+      discovery:
+        server-addr: 192.168.81.33:8848
+        namespace: 07f4721e-58fd-4257-a2f8-6ec29b5ea247
+        metadata:
+          management:
+            context-path: ${server.servlet.context-path}/actuator

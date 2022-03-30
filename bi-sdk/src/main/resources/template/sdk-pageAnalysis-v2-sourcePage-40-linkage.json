@@ -1,0 +1,25 @@
+{
+  "id": "sdk-pageAnalysis-v2-sourcePage-40-linkage",
+  "chartName":"来源页面",
+  "chartType": "table",
+  "databaseName": "banyan_bi_sdk",
+  "tableName": "view_sdk_app_sdk_web_session",
+  "dimension": [
+    {
+      "name": "date",
+      "group": "#(group)",
+      "aliasName": "时间"
+    }
+  ],
+  "measure": [
+    {
+      "name": "count(distinct if(user_type=1,uv,null))",
+      "func": "",
+      "contrast": "",
+      "aliasName": "新访客数"
+    }
+  ],
+  "dashboard": [
+
+  ]
+}

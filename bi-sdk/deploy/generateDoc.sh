@@ -1,0 +1,1 @@
+sshpass -p 'f57TIulmhtbp&' scp -r ../doc/bi-sdk-api-v2.html root@10.0.44.15:/www/bidoc/bi-sdk-api-v2.html

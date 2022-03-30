@@ -1,0 +1,28 @@
+spring:
+  profiles:
+    active:
+      - pre
+    include:
+      - swagger
+  application:
+    name: bi-gateway
+  cloud:
+    nacos:
+      config:
+        server-addr: nacos.stnts.com:30080
+        namespace: c05d9d31-0890-4612-b662-cfe04a0cf1fd
+        file-extension: yaml
+        shared-configs:
+          - bi-redis.yaml
+      discovery:
+        server-addr: nacos.stnts.com:30080
+        namespace: c05d9d31-0890-4612-b662-cfe04a0cf1fd
+        metadata:
+          management:
+            context-path: ${server.servlet.context-path}/actuator
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      loadbalancer:
+        use404: true

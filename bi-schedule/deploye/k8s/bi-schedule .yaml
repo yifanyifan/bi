@@ -1,0 +1,52 @@
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: bi
+  name: bi-schedule
+  labels:
+    app: bi-schedule
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: bi-schedule
+  template:
+    metadata:
+      labels:
+        app: bi-schedule
+    spec:
+      containers:
+        - name: bi-schedule
+          image: dt-harbor.stnts.com/dt-prod/bi-schedule:0.2
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 18884
+          resources:
+            limits:
+              cpu: "2"
+              memory: 2048Mi
+            requests:
+              cpu: "1"
+              memory: 512Mi
+      imagePullSecrets:
+        - name: k8sonline
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: bi
+  name: bi-schedule-service
+spec:
+  selector:
+    app: bi-schedule
+  ports:
+    - protocol: TCP
+      port: 18884
+      targetPort: 18884

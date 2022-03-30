@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: bi
+  name: bi-data-management-service
+spec:
+  selector:
+    app: bi-data-management
+  ports:
+    - protocol: TCP
+      port: 18885
+      targetPort: 18885

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stnts.bi.datamanagement.module.channel.mapper.ChannelChildMapper">
+    <select id="selectListByExcel" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelChild">
+        select c.*, d.channel_name from dm_channel_child c
+        left join dm_channel d on c.channel_id = d.channel_id
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                and
+                <foreach collection='paramList' separator=' or ' item='param' index='i'>
+                    (c.sub_channel_name = #{param.subChannelName} and d.channel_name = #{param.channelName} and d.department_code = #{param.channelDepartmentCode})
+                </foreach>
+            </trim>
+        </where>
+    </select>
+
+    <select id="countByChannelIdList" resultType="com.stnts.bi.datamanagement.module.channel.entity.Channel">
+        select channel_id, count(1) number from dm_channel_child
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test="channelIdList != null and channelIdList.size() > 0">
+                    and channel_id in
+                    <foreach collection='channelIdList' item='item' open='(' close=')' separator=','>
+                        #{item}
+                    </foreach>
+                </if>
+            </trim>
+        </where>
+        group by channel_id
+    </select>
+
+    <select id="listChannelChildByCcid" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelChild">
+        select DISTINCT p.sub_channel_id, cc.sub_channel_name, p.product_code productCode, pt.product_name,
+        p.application_id, count(p.pid) pIdNum from dm_channel_promotion p
+        left join dm_channel_cooperation c on p.ccid = c.ccid
+        left join dm_channel_child cc on cc.sub_channel_id = p.sub_channel_id
+        left join dm_channel_product pt on p.product_code = pt.product_code
+        where  ( (p.ccid_settlement = #{params.ccid} or p.ccid = #{params.ccid})
+        <include refid="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionMapper.colnumSQL"/>
+        )
+        group by p.sub_channel_id, cc.sub_channel_name, p.product_code, p.application_id, pt.product_name
+    </select>
+
+    <select id="channelChildListGeneral" resultType="com.stnts.bi.datamanagement.module.channel.vo.ChannelChildVO">
+        select cn.department_code, cn.department_name, cn.channel_id, cn.channel_name, cn.customer_id, cn.customer_name, c.sub_channel_id, c.sub_channel_name, c.create_time, c.update_time
+        from dm_channel_child c
+        left join dm_channel cn on c.channel_id = cn.channel_id
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test='param.departmentCode != null and param.departmentCode != ""'>
+                    and cn.department_code = #{param.departmentCode}
+                </if>
+                <if test='param.departmentName != null and param.departmentName != ""'>
+                    and cn.department_name = #{param.departmentName}
+                </if>
+                <if test='param.channelId != null and param.channelId != ""'>
+                    and cn.channel_id = #{param.channelId}
+                </if>
+                <if test='param.channelName != null and param.channelName != ""'>
+                    and cn.channel_name = #{param.channelName}
+                </if>
+                <if test='param.subChannelId != null and param.subChannelId != ""'>
+                    and c.sub_channel_id = #{param.subChannelId}
+                </if>
+                <if test='param.subChannelName != null and param.subChannelName != ""'>
+                    and c.sub_channel_name = #{param.subChannelName}
+                </if>
+                <if test='param.updateTimeStart != null'>
+                    and c.update_time >= #{param.updateTimeStart}
+                </if>
+                <if test='param.updateTimeEnd != null'>
+                    and c.update_time &lt;= #{param.updateTimeEnd}
+                </if>
+            </trim>
+        </where>
+    </select>
+    <select id="getChannelChildListByPP" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelChild">
+        select cc.channel_id, cc.sub_channel_id, cc.sub_channel_name, pp.pp_id, pp.pp_name, pp.pp_status, pp.plug_id, pp.plug_name, cc.create_time from dm_channel_child cc
+        left join dm_channel_promotion_position pp on (cc.sub_channel_id = pp.sub_channel_id and pp.pp_flag = 2)
+        where cc.channel_id = #{channelId} order by cc.create_time desc
+    </select>
+    <select id="selectListBySQL" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelChild">
+        select cc.* from dm_channel_child cc
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test='params.subChannelId != null and params.subChannelId != ""'>
+                    and cc.sub_channel_id like concat('%', #{params.subChannelId}, '%')
+                </if>
+                <if test='params.subChannelName != null and params.subChannelName != ""'>
+                    and cc.sub_channel_name like concat('%', #{params.subChannelName}, '%')
+                </if>
+                <if test='params.ccid != null and params.ccid != ""'>
+                    and cc.ccid = #{params.ccid}
+                </if>
+                <if test='params.channelId != null'>
+                    and cc.channel_id = #{params.channelId}
+                </if>
+                <if test='params.departmentCode != null and params.departmentCode != ""'>
+                    and cc.channel_id in (select t.channel_id from dm_channel t where t.department_code = #{params.departmentCode})
+                </if>
+            </trim>
+        </where>
+    </select>
+</mapper>

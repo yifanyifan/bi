@@ -1,0 +1,26 @@
+spring:
+  profiles:
+    active:
+      - biz
+  application:
+    name: bi-gateway
+  cloud:
+    nacos:
+      config:
+        server-addr: nacos-service.default
+        namespace: cfd6f40c-8f76-4ea9-b4c5-a5929a2faf53
+        file-extension: yaml
+        shared-configs:
+          - bi-redis.yaml
+      discovery:
+        server-addr: nacos-service.default
+        namespace: cfd6f40c-8f76-4ea9-b4c5-a5929a2faf53
+        metadata:
+          management:
+            context-path: ${server.servlet.context-path}/actuator
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      loadbalancer:
+        use404: true

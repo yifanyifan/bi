@@ -1,0 +1,46 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: bi
+  name: bi-data-management
+  labels:
+    app: bi-data-management
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bi-data-management
+  template:
+    metadata:
+      labels:
+        app: bi-data-management
+    spec:
+      containers:
+        - name: bi-data-management
+          image: dt-harbor.stnts.com/dt-prod/bi-data-management:0.2
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 18885
+          volumeMounts:
+            - mountPath: "/webser/www/bi-data-management/"
+              name: images
+            - mountPath: "/etc/localtime"
+              name: tz-config
+              readOnly: true
+          resources:
+            limits:
+              cpu: "2"
+              memory: 2048Mi
+            requests:
+              cpu: "1"
+              memory: 512Mi
+      imagePullSecrets:
+        - name: k8sonline
+      volumes:
+        - name: images
+          persistentVolumeClaim:
+            claimName: bi-data-management-pvc
+        - name: tz-config
+          hostPath:
+            path: /etc/localtime

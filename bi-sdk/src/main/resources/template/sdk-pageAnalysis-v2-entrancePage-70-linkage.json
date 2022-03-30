@@ -1,0 +1,26 @@
+{
+  "id": "sdk-pageAnalysis-v2-entrancePage-70-linkage",
+  "chartName":"入口页面",
+  "chartType": "table",
+  "databaseName": "banyan_bi_sdk",
+  "tableName": "view_sdk_app_sdk_web_session",
+  "dimension": [
+    {
+      "name": "date",
+      "group": "#(group)",
+      "aliasName": "时间"
+    }
+  ],
+  "measure": [
+    {
+      "name": "sum(online_duration) / 60000 / sum(pv)",
+      "func": "",
+      "contrast": "",
+      "aliasName": "平均页面停留时长(m)",
+      "order": -1
+    }
+  ],
+  "dashboard": [
+
+  ]
+}

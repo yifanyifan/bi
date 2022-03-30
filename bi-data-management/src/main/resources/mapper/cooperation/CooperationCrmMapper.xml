@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stnts.bi.datamanagement.module.cooperation.mapper.CooperationCrmMapper">
+
+    <update id="updateCompanyName">
+        update dm_cooperation_crm
+        <trim prefix="set" suffixOverrides=",">
+            <if test="params.companyName != null and params.companyName != ''">
+                company_name = #{params.companyName},
+            </if>
+            <if test="params.cooperationType != null and params.cooperationType != ''">
+                cooperation_type = #{params.cooperationType},
+            </if>
+            <if test="params.companyTaxkey != null and params.companyTaxkey != ''">
+                company_taxkey = #{params.companyTaxkey},
+            </if>
+            <if test="params.isProtection != null">
+                is_protection = #{params.isProtection},
+            </if>
+            <if test="params.isTest != null">
+                is_test = #{params.isTest},
+            </if>
+            <if test="params.inSystem != null">
+                in_system = #{params.inSystem},
+            </if>
+            <if test="params.natureContract != null">
+                nature_contract = #{params.natureContract},
+            </if>
+            <if test="params.bankName != null and params.bankName != ''">
+                bank_name = #{params.bankName},
+            </if>
+            <if test="params.bankNumber != null and params.bankNumber != ''">
+                bank_number = #{params.bankNumber},
+            </if>
+            <if test="params.cardNumber != null and params.cardNumber != ''">
+                card_number = #{params.cardNumber},
+            </if>
+        </trim>
+        where related_cooperation_id = #{params.companyId}
+    </update>
+</mapper>

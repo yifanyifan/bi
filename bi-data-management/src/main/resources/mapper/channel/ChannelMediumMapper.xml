@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stnts.bi.datamanagement.module.channel.mapper.ChannelMediumMapper">
+    <select id="selectListByMedium" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelMedium">
+        select * from dm_channel_medium
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                and
+                <foreach collection='paramList' separator=' or ' item='param' index='i'>
+                    (department_name = #{param.promoteDepartmentName} and name = #{param.mediumName})
+                </foreach>
+            </trim>
+        </where>
+    </select>
+</mapper>

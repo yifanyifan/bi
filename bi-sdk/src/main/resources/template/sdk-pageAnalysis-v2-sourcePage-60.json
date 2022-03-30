@@ -1,0 +1,26 @@
+{
+  "id": "sdk-pageAnalysis-v2-sourcePage-60",
+  "chartName":"来源页面",
+  "chartType": "table",
+  "databaseName": "banyan_bi_sdk",
+  "tableName": "view_sdk_app_sdk_web_session",
+  "dimension": [
+    {
+      "name": "parent_page_domain",
+      "group": "",
+      "aliasName": "来源页面"
+    }
+  ],
+  "measure": [
+    {
+      "name": "sum(online_duration) / 60000 / count(distinct session)",
+      "func": "",
+      "contrast": "",
+      "aliasName": "平均访问时长(m)",
+      "order": -1
+    }
+  ],
+  "dashboard": [
+
+  ]
+}

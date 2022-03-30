@@ -1,0 +1,13 @@
+## 可选配置
+# 是否在日志中显示执行的SQL
+showSql = true
+# 是否格式化显示的SQL
+formatSql = false
+# 是否显示SQL参数
+showParams = true
+
+[oracle]
+url = jdbc:oracle:thin:@10.0.6.40:1521:devdb
+username = app
+password = J1myaSE5l7ijOgqJ
+driver = oracle.jdbc.OracleDriver

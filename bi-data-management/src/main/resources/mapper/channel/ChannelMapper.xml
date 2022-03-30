@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stnts.bi.datamanagement.module.channel.mapper.ChannelMapper">
+    <select id="selectListByExcel" resultType="com.stnts.bi.datamanagement.module.channel.entity.Channel">
+        select * from dm_channel
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                and
+                <foreach collection='paramList' separator=' or ' item='param' index='i'>
+                    (channel_name = #{param.channelName} and (department_code = #{param.channelDepartmentCode} or secret_type = 1))
+                </foreach>
+            </trim>
+        </where>
+    </select>
+
+    <select id="getPageList" resultType="com.stnts.bi.datamanagement.module.channel.entity.Channel">
+        SELECT ca.*,
+        (select count(1) from dm_channel_child d where d.channel_id = ca.channel_id) as subChannelNum,
+        (select count(1) from dm_channel_promotion_position d where d.channel_id = ca.channel_id) as promotionPositionNum,
+        (
+            select count(1) from dm_channel_cooperation c where c.channel_id = ca.channel_id
+            <include refid="com.stnts.bi.datamanagement.module.channel.mapper.ChannelCooperationMapper.colunmSQL"></include>
+        ) as ccIdNum
+        FROM dm_channel ca
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test='null != params.keyword and params.keyword != ""'>
+                    <bind name='key' value="'%' + params.keyword + '%'"/>
+                    and (ca.channel_id in (select co.channel_id from dm_channel_cooperation co where co.ccid like #{key})
+                    or ca.username like #{key} or ca.company_name like #{key} or ca.channel_id like #{key} or
+                    ca.channel_name like #{key} or ca.department_name like #{key} or ca.update_time like #{key} or ca.secret_type =
+                        <if test='params.keyword != null and params.keyword != ""'>
+                            <if test='params.keyword == "共享"'>
+                                '1'
+                            </if>
+                            <if test='params.keyword == "私有"'>
+                                '2'
+                            </if>
+                            <if test='params.keyword != "共享" and params.keyword != "私有"'>
+                                #{key}
+                            </if>
+                        </if>
+                    )
+                </if>
+                <if test='params.departmentCode != null and params.departmentCode != ""'>
+                    and ca.department_code = #{params.departmentCode}
+                </if>
+                <if test='params.channelId != null'>
+                    and ca.channel_id = #{params.channelId}
+                </if>
+                <if test='params.companyId != null'>
+                    and ca.company_id = #{params.companyId}
+                </if>
+                <include refid="columnSQL"></include>
+            </trim>
+        </where>
+    </select>
+
+    <select id="secrchList" resultType="com.stnts.bi.datamanagement.module.channel.entity.Channel">
+        select distinct ca.department_code, ca.department_name, ca.company_id, ca.company_name, ca.channel_id, ca.channel_name, ca.secret_type from dm_channel ca
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test='params.departmentCode != null and params.departmentCode != ""'>
+                    and ca.department_code = #{params.departmentCode}
+                </if>
+                <if test='params.companyId != null'>
+                    and ca.company_id = #{params.companyId}
+                </if>
+                <if test='params.channelId != null'>
+                    and ca.channel_id = #{params.channelId}
+                </if>
+                <!--<if test='params.secretType != null and params.secretType != ""'>
+                    and ca.secret_type = #{params.secretType}
+                </if>-->
+                <include refid="columnSQL"> </include>
+            </trim>
+        </where>
+    </select>
+
+    <!--select distinct p.product_code, coo.* from dm_channel_cooperation coo
+    left join dm_channel c on coo.channel_id = c.channel_id
+    left join dm_channel_product p on c.department_code = p.department_code
+    <where>
+        <trim suffixOverrides="AND | OR" prefix="1=1">
+            <if test="productCodeList != null and productCodeList.size() > 0">
+                and p.product_code in
+                <foreach collection='productCodeList' open='(' close=')' separator=',' item='item'>
+                    #{item}
+                </foreach>
+            </if>
+            and c.settlement_type = '1'
+        </trim>
+    </where>-->
+    <select id="getSettleCCIDByProd" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelCooperation">
+        select p.product_code, coo.* from dm_channel_cooperation coo
+        left join dm_channel c on coo.channel_id = c.channel_id
+        left join dm_channel_product p on p.department_code = coo.department_code
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                and coo.department_code in  (
+                    select t.* from (
+                        select pt.department_code from dm_channel_product pt where pt.product_code in
+                        <foreach collection='productCodeList' open='(' close=')' separator=',' item='item'>
+                            #{item}
+                        </foreach>
+                    ) t
+                ) and c.settlement_type = 1
+            </trim>
+        </where>
+    </select>
+
+    <!--.eq(Channel::getChannelName, channel.getChannelName()).and(i -> i.eq(Channel::getSecretType, 1).or().eq(Channel::getDepartmentCode, channel.getDepartmentCode()))-->
+    <select id="validationChannel01" resultType="com.stnts.bi.datamanagement.module.exportdata.param.ExportDataParam">
+        select * from dm_channel c
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                and
+                <foreach collection="params" open='(' close=')' separator=' or ' item='item'>
+                    (c.channel_name = #{item.channelName} and (c.secret_type = 1 or c.department_code = #{item.channelDepartmentCode}))
+                </foreach>
+            </trim>
+        </where>
+    </select>
+
+
+    <!--.eq(Channel::getChannelName, channel.getChannelName()).eq(Channel::getDepartmentCode, channel.getDepartmentCode())-->
+    <select id="validationChannel02" resultType="com.stnts.bi.datamanagement.module.exportdata.param.ExportDataParam">
+        select * from dm_channel c
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                and
+                <foreach collection="params" open='(' close=')' separator=' or ' item='item'>
+                    (c.channel_name = #{item.channelName} and c.department_code = #{item.channelDepartmentCode})
+                </foreach>
+            </trim>
+        </where>
+    </select>
+
+    <update id="updateCompanyName">
+        update dm_channel
+        <trim prefix="set" suffixOverrides=",">
+            <if test="companyName != null and companyName != ''">
+                company_name = #{companyName},
+            </if>
+        </trim>
+        where company_id = #{companyId}
+    </update>
+
+    <sql id="columnSQL">
+        <!-- 以部门组织为准 + 共享 CID-->
+        <trim prefix='and (' suffix=')' prefixOverrides='and|or'>
+            <if test='params.secretType != 1 and params.departmentCodeAllList != null and params.departmentCodeAllList.size() > 0'>
+                ca.department_code in
+                <foreach collection='params.departmentCodeAllList' open='(' close=')' separator=',' item='dc' index='i'>
+                    #{dc}
+                </foreach>
+            </if>
+            <if test='params.secretType == null'>
+                or ca.secret_type = 1
+            </if>
+            <if test='params.secretType != null'>
+                and ca.secret_type = #{params.secretType}
+            </if>
+        </trim>
+    </sql>
+</mapper>

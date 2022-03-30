@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionPositionMapper">
+    <select id="selectListByExcel" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelPromotionPosition">
+        select p.*, c.channel_name, d.sub_channel_name from dm_channel_promotion_position p
+        left join dm_channel c on p.channel_id = c.channel_id
+        left join dm_channel_child d on p.sub_channel_id = d.sub_channel_id
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                and
+                <foreach collection='paramList' separator=' or ' item='param' index='i'>
+                    (p.pp_name = #{param.ppName} and p.pp_flag =
+                    <if test='"渠道推广位" == param.ppFlag'>
+                        "1" and c.channel_name = #{param.channelName}
+                    </if>
+                    <if test='"子渠道推广位" == param.ppFlag'>
+                        "2" and d.sub_channel_name = #{param.subChannelName}
+                    </if>
+                    and c.department_code = #{param.channelDepartmentCode}
+                    )
+                </foreach>
+            </trim>
+        </where>
+    </select>
+
+    <select id="countByChannelIdList" resultType="com.stnts.bi.datamanagement.module.channel.entity.Channel">
+        select channel_id, count(1) number from dm_channel_promotion_position
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test="channelIdList != null and channelIdList.size() > 0">
+                    and channel_id in
+                    <foreach collection='channelIdList' open='(' close=')' separator=',' item='channelId' index='i'>
+                        #{channelId}
+                    </foreach>
+                </if>
+                /*and pp_status = 1*/
+            </trim>
+        </where>
+        group by channel_id
+    </select>
+
+    <select id="selectByPid" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelPromotionPosition">
+        select pp.* from dm_channel_promotion p
+        left join dm_channel_promotion_position pp on p.pp_id = pp.pp_id
+        where p.pid = #{pid}
+    </select>
+</mapper>

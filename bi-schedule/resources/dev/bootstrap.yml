@@ -1,0 +1,71 @@
+spring:
+  application:
+    name: bi-schedule
+  cloud:
+    nacos:
+      config:
+#        server-addr: 192.168.81.33:8848
+#        namespace: 07f4721e-58fd-4257-a2f8-6ec29b5ea247
+        server-addr: nacos.stms.com:80
+        #namespace: cd625f51-69f6-4091-8089-62e8c26299c7
+        file-extension: yaml
+      discovery:
+#        server-addr: 192.168.81.33:8848
+#        namespace: 07f4721e-58fd-4257-a2f8-6ec29b5ea247
+        server-addr: nacos.stms.com:80
+        #namespace: cd625f51-69f6-4091-8089-62e8c26299c7
+        metadata:
+          management:
+            context-path: ${server.servlet.context-path}/actuator
+  profiles:
+    active: dev
+  datasource:
+    url: jdbc:clickhouse://10.0.44.253:8123/bi_plugin
+    driver-class-name: ru.yandex.clickhouse.ClickHouseDriver
+    username: default
+    password: ArtPzgI9xGlV
+
+deduct:
+  setting:
+    appId: orderSystem
+    appSecret: jy0Neokx
+    appId2: orderGeneral # 查询条件必填【通用API】
+    appSecret2: yFsKpMpc
+
+schedule:
+  setting:
+    wutong:
+      interface:
+        #address: http://10.0.6.134:8025/
+        address: https://wutongshu.stnts.com/
+        secret: 8XcACidp4q3791yo
+  msg:
+    url: https://dtwx-dev.shengtian.com/msg/web?msg=
+  jdbc:
+    ch:
+      url: jdbc:clickhouse://10.0.45.98:8123
+      username: default
+      password: ArtPzgI9xGlV
+    hive:
+      driver: org.apache.hive.jdbc.HiveDriver
+      url: jdbc:hive2://10.0.45.141:10000
+      username: hive
+      password: hive
+    cjt:
+      url: jdbc:mysql://10.0.41.104:33066/youtop_external?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8
+      username: yifan
+      password: yifan119
+    mongo:
+      url: 10.0.44.253
+      url02: 10.0.44.253
+      url03: 10.0.44.253
+      port: 27017
+      username: fas_test
+      authsource: fas_test
+      password: HBy7u*&TG9
+      dbname: fas_test
+    mysql:
+      # url: jdbc:mysql://10.0.44.120:33067/bi_data_management_dev?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8
+      url: jdbc:mysql://10.0.44.120:33067/bi_data_management_dev_business?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8
+      username: bi_dev
+      password: 8A3yBPZeEKlyvWNO

@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: bi-sys
+  cloud:
+    nacos:
+      config:
+        server-addr: nacos-service.default
+        namespace: cfd6f40c-8f76-4ea9-b4c5-a5929a2faf53
+        file-extension: yaml
+        shared-configs:
+        - bi-mysql.yaml
+        - bi-redis.yaml
+      discovery:
+        server-addr: nacos-service.default
+        namespace: cfd6f40c-8f76-4ea9-b4c5-a5929a2faf53
+        metadata:
+          management:
+            context-path: ${server.servlet.context-path}/actuator
+
+  #配置生效的配置
+  profiles:
+    active:
+      - biz

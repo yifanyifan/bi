@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: bi-dashboard
+  cloud:
+    nacos:
+      config:
+        server-addr: nacos.stms.com:80
+#        namespace: cd625f51-69f6-4091-8089-62e8c26299c7
+#        server-addr: 192.168.81.33:8848
+#        namespace: 07f4721e-58fd-4257-a2f8-6ec29b5ea247
+        file-extension: yaml
+        shared-configs:
+          - bi-redis.yaml
+      discovery:
+        server-addr: nacos.stms.com:80
+#        namespace: cd625f51-69f6-4091-8089-62e8c26299c7
+#        server-addr: 192.168.81.33:8848
+#        namespace: 07f4721e-58fd-4257-a2f8-6ec29b5ea247
+        metadata:
+          management:
+            context-path: ${server.servlet.context-path}/actuator
+  profiles:
+    active: dev

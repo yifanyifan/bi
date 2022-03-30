@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionAllMapper">
+
+    <update id="updateByFlag">
+        update dm_channel_promotion_all set flag = #{flag} where pid in
+        <foreach collection='params' open='(' close=')' separator=',' item='item'>
+            #{item}
+        </foreach>
+    </update>
+
+    <update id="updateOldPid">
+        update dm_channel_promotion_all set flag = '2', check_end_date = CONCAT(SUBSTRING(subdate(#{params.checkStartDate}, 1),1, 10), ' 23:59:59') where pid = #{params.pid} and flag = '1'
+    </update>
+
+    <update id="moveCPCompany">
+        update dm_channel_promotion_all set vendor_id = #{params.vendorId}, vendor_name = #{params.vendorName}, vendor_check_start_date = #{params.vendorCheckStartDate}, vendor_check_end_date = #{params.vendorCheckEndDate}
+        where product_code = #{params.productCode}
+    </update>
+
+    <update id="updateCompanyName">
+        update dm_channel_promotion_all set company_name = #{companyName} where company_id = #{companyId}
+    </update>
+    <update id="updateCompany">
+        update dm_channel_promotion_all set company_id = #{companyId}, company_name = #{companyName} where channel_id = #{channelId}
+    </update>
+    <update id="updateChannelNameSettlement">
+        update dm_channel_promotion_all set channel_name_settlement = #{params.channelName} where channel_id_settlement = #{params.channelId}
+    </update>
+    <update id="updateChannelSettlementByCCIDSettlement">
+        update dm_channel_promotion_all set channel_id_settlement = #{params.channelId}, channel_name_settlement = #{params.channelName} where ccid_settlement = #{params.ccid}
+    </update>
+
+    <select id="selectListByApp" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelPromotionAll">
+        select * from dm_channel_promotion_all cpa
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                and cpa.flag = 1 and cpa.product_code = #{productCode}
+            </trim>
+        </where>
+    </select>
+    <select id="selectOneByHistory" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelPromotionAll">
+        select pa.* from dm_channel_promotion_all pa where pa.pid = #{params.pid} and pa.flag = '2'
+        and DATE_FORMAT(pa.check_start_date, '%Y%m%d') = DATE_FORMAT(#{params.checkStartDate}, '%Y%m%d')
+        and DATE_FORMAT(pa.check_end_date, '%Y%m%d') = DATE_FORMAT(#{params.checkEndDate}, '%Y%m%d')
+    </select>
+</mapper>

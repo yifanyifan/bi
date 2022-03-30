@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: bi-admin
+  cloud:
+    nacos:
+      config:
+      #测试单机
+#        server-addr: 192.168.81.33:8848
+#        namespace: 07f4721e-58fd-4257-a2f8-6ec29b5ea247
+      #测试k8s
+#        server-addr: 10.106.181.156
+#        namespace: cd625f51-69f6-4091-8089-62e8c26299c7
+      #线上k8s环境
+        server-addr: nacos.stnts.com:30080
+        namespace: 3535cdb7-afed-432c-bdb5-2d089b25dde7
+        file-extension: yaml
+        shared-configs:
+          - bi-redis.yaml

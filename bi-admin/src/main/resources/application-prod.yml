@@ -1,0 +1,26 @@
+#test表示测试的k8s环境
+server:
+  port: 18110
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: nacos.stnts.com:30080
+        namespace: 3535cdb7-afed-432c-bdb5-2d089b25dde7
+        metadata:
+          management:
+            context-path: ${server.servlet.context-path}/actuator
+  kafka:
+    bootstrap-servers: hbase01:9092,hbase02:9092,hbase03:9092,hbase04:9092,hbase05:9092
+  security:
+    user:
+      name: admin
+      password: qbqRWuMVoPolNChO
+  boot:
+    admin:
+      ui:
+        public-url: https://bi.stnts.com/bi-bak/bi-admin/
+        title: BI应用监控
+      discovery:
+        ignored-services:
+          - bi-admin

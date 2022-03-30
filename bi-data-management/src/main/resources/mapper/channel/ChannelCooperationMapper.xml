@@ -1,0 +1,630 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stnts.bi.datamanagement.module.channel.mapper.ChannelCooperationMapper">
+    <select id="countByChannel" parameterType="java.lang.String" resultType="java.lang.Long">
+        select count(1) from dm_channel_cooperation where channel_id = #{channelId}
+    </select>
+
+    <select id="countByChannelIdList" resultType="com.stnts.bi.datamanagement.module.channel.entity.Channel">
+        select c.channel_id, count(1) number from dm_channel_cooperation c
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test="params.channelIdList != null and params.channelIdList.size() > 0">
+                    and c.channel_id in
+                    <foreach collection='params.channelIdList' open='(' close=')' separator=',' item='channelId' index='i'>
+                        #{channelId}
+                    </foreach>
+                </if>
+                <include refid="colunmSQL"></include>
+            </trim>
+        </where>
+        group by c.channel_id
+    </select>
+
+    <select id="selectListByExcel" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelCooperation">
+        select * from dm_channel_cooperation c
+        left join dm_channel dc on c.channel_id = dc.channel_id
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                and
+                <foreach collection='paramList' separator=' or ' item='param' index='i'>
+                    (
+                    c.department_name = #{param.promoteDepartmentName} and c.channel_name = #{param.channelName}
+                    and dc.department_code = #{param.channelDepartmentCode}
+                    and c.first_level_business = #{param.firstLevelBusiness} and c.second_level_business = #{param.secondLevelBusiness} and c.third_level_business = #{param.thirdLevelBusiness}
+                    and c.business_dict_id = #{param.businessDictId}
+                    and c.charge_rule = #{param.chargeRule}
+                    <if test='param.channelShareType != null and param.channelShareType != ""'>
+                        and c.channel_share_type = #{param.channelShareType}
+                    </if>
+                    <if test='param.channelShareType == null or param.channelShareType == ""'>
+                        and (c.channel_share_type is null or c.channel_share_type = '')
+                    </if>
+
+                    <if test='param.channelShare != null and param.channelShare != ""'>
+                        and c.channel_share = #{param.channelShare}
+                    </if>
+                    <if test='param.channelShare == null or param.channelShare == ""'>
+                        and (c.channel_share is null or c.channel_share = '')
+                    </if>
+
+                    <if test='param.channelShareStep != null and param.channelShareStep != ""'>
+                        and c.channel_share_step = #{param.channelShareStep}
+                    </if>
+                    <if test='param.channelShareStep == null or param.channelShareStep == ""'>
+                        and (c.channel_share_step is null or c.channel_share_step = '')
+                    </if>
+
+                    <if test='param.price != null and param.price != ""'>
+                        and c.price = #{param.price}
+                    </if>
+                    <if test='param.price == null or param.price == ""'>
+                        and (c.price is null or c.price = '')
+                    </if>
+
+                    <if test='param.channelRate != null and param.channelRate != ""'>
+                        and c.channel_rate = #{param.channelRate}
+                    </if>
+
+                    )
+                </foreach>
+            </trim>
+        </where>
+    </select>
+
+    <!-- 版本1：有重复 -->
+    <!--<select id="listChannelCooperation" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelCooperation">
+        /*select cc.*, t.subChannelNum, t.appNum, t.pidNum, t.pidHistoryNum from (*/
+        SELECT c.*,
+        (
+        (
+        select count(DISTINCT p.sub_channel_id) from dm_channel_promotion p left join dm_channel_product pt on p.product_code = pt.product_code
+        <where>
+            <trim prefixOverrides="and|or">
+                (p.ccid = c.ccid)
+                <include refid="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionMapper.colnumSQL"></include>
+            </trim>
+        </where>
+        ) + (
+        select count(DISTINCT p.sub_channel_id) from dm_channel_promotion p left join dm_channel_product pt on p.product_code = pt.product_code
+        <where>
+            <trim prefixOverrides="and|or">
+                (p.ccid_settlement is not null and p.ccid_settlement = c.ccid)
+                <include refid="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionMapper.colnumSQL"></include>
+            </trim>
+        </where>
+        )
+        ) as subChannelNum,
+        (
+        (
+        select count(DISTINCT p.product_code, COALESCE(p.application_id,'NULL')) from dm_channel_promotion p left join dm_channel_product pt on p.product_code = pt.product_code
+        <where>
+            <trim prefixOverrides="and|or">
+                (p.ccid = c.ccid)
+                <include refid="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionMapper.colnumSQL"></include>
+            </trim>
+        </where>
+        ) + (
+        select count(DISTINCT p.product_code, COALESCE(p.application_id,'NULL')) from dm_channel_promotion p left join dm_channel_product pt on p.product_code = pt.product_code
+        <where>
+            <trim prefixOverrides="and|or">
+                (p.ccid_settlement is not null and p.ccid_settlement = c.ccid)
+                <include refid="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionMapper.colnumSQL"></include>
+            </trim>
+        </where>
+        )
+        ) as appNum,
+        (
+        (
+        select count(DISTINCT p.pid) from dm_channel_promotion p left join dm_channel_product pt on p.product_code = pt.product_code
+        <where>
+            <trim prefixOverrides="and|or">
+                (p.ccid = c.ccid)
+                <include refid="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionMapper.colnumSQL"></include>
+            </trim>
+        </where>
+        ) + (
+        select count(DISTINCT p.pid) from dm_channel_promotion p left join dm_channel_product pt on p.product_code = pt.product_code
+        <where>
+            <trim prefixOverrides="and|or">
+                (p.ccid_settlement is not null and p.ccid_settlement = c.ccid)
+                <include refid="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionMapper.colnumSQL"></include>
+            </trim>
+        </where>
+        )
+        ) as pidNum,
+        (select count(DISTINCT h.pid) from dm_channel_promotion_history h where h.ccid = c.ccid) as pidHistoryNum
+        FROM dm_channel_cooperation c
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test='null != params.agentId'>
+                    and c.agent_id = #{params.agentId}
+                </if>
+            </trim>
+        </where>
+    </select>-->
+
+    <!-- 版本2：有重复 -->
+    <!--<select id="listChannelCooperationFeiQi" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelCooperation">
+        /*select cc.*, t.subChannelNum, t.appNum, t.pidNum, t.pidHistoryNum from (*/
+        SELECT c.*,
+        (select count(1) from (
+        (
+        select DISTINCT p.sub_channel_id as s1 from dm_channel_promotion p
+        left join dm_channel_product pt on p.product_code = pt.product_code
+        <where>
+            <trim prefixOverrides="and|or">
+                (p.ccid = c.ccid)
+                <include refid="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionMapper.colnumSQL"></include>
+            </trim>
+        </where>
+        ) union (
+        select DISTINCT p.sub_channel_id as s1 from dm_channel_promotion p left join dm_channel_product pt on p.product_code = pt.product_code
+        <where>
+            <trim prefixOverrides="and|or">
+                (p.ccid_settlement is not null and p.ccid_settlement = c.ccid)
+                <include refid="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionMapper.colnumSQL"></include>
+            </trim>
+        </where>
+        )
+        ) t1) as subChannelNum,
+        (select count(1) from (
+        (
+        select DISTINCT p.product_code as p1, COALESCE(p.application_id,'NULL') as p2 from dm_channel_promotion p left join dm_channel_product pt on p.product_code = pt.product_code
+        <where>
+            <trim prefixOverrides="and|or">
+                (p.ccid = c.ccid)
+                <include refid="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionMapper.colnumSQL"></include>
+            </trim>
+        </where>
+        ) union (
+        select DISTINCT p.product_code as p1, COALESCE(p.application_id,'NULL') as p2 from dm_channel_promotion p left join dm_channel_product pt on p.product_code = pt.product_code
+        <where>
+            <trim prefixOverrides="and|or">
+                (p.ccid_settlement is not null and p.ccid_settlement = c.ccid)
+                <include refid="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionMapper.colnumSQL"></include>
+            </trim>
+        </where>
+        )
+        ) t2) as appNum,
+        (select count(1) from (
+        (
+        select DISTINCT p.pid as p3 from dm_channel_promotion p left join dm_channel_product pt on p.product_code = pt.product_code
+        <where>
+            <trim prefixOverrides="and|or">
+                (p.ccid = c.ccid)
+                <include refid="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionMapper.colnumSQL"></include>
+            </trim>
+        </where>
+        ) union (
+        select DISTINCT p.pid as p3 from dm_channel_promotion p left join dm_channel_product pt on p.product_code = pt.product_code
+        <where>
+            <trim prefixOverrides="and|or">
+                (p.ccid_settlement is not null and p.ccid_settlement = c.ccid)
+                <include refid="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionMapper.colnumSQL"></include>
+            </trim>
+        </where>
+        )
+        ) t3) as pidNum,
+        (select count(DISTINCT h.pid) from dm_channel_promotion_history h where h.ccid = c.ccid) as pidHistoryNum
+        FROM dm_channel_cooperation c
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test='null != params.agentId'>
+                    and c.agent_id = #{params.agentId}
+                </if>
+            </trim>
+        </where>
+    </select>-->
+
+    <!-- update by yifan 2021-10-13 -->
+    <select id="listChannelCooperation" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelCooperation">
+        SELECT c.*,
+        <if test='params.longTimeOrder != null and params.longTimeOrder == "1" '>
+            <include refid="longTimeOrder"/>
+        </if>
+        (select count(DISTINCT h.pid) from dm_channel_promotion_history h where h.ccid = c.ccid) as pidHistoryNum
+        FROM dm_channel_cooperation c
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test='null != params.agentId'>
+                    and c.agent_id = #{params.agentId}
+                </if>
+                <if test='null != params.departmentCode'>
+                    and c.department_code = #{params.departmentCode}
+                </if>
+                <if test='null != params.channelId'>
+                    and c.channel_id = #{params.channelId}
+                </if>
+                <if test='null != params.keyword and params.keyword != ""'>
+                    <bind name='key' value="'%' + params.keyword + '%'" />
+                    and (c.ccid like #{key} or c.username like #{key} or c.agent_name like #{key} or c.channel_name like #{key} or c.department_name like #{key} or c.department_code like #{key}
+                    or c.first_level_business like #{key} or c.second_level_business like #{key} or c.third_level_business like #{key} or c.charge_rule like #{key} or c.update_time like #{key}
+                    )
+                </if>
+                <if test='null != params.ccid'>
+                    and (c.ccid like concat('%', #{params.ccid}, '%'))
+                </if>
+                <if test='null != params.agentName'>
+                    and c.agent_name like concat('%', #{params.agentName}, '%')
+                </if>
+                <if test='null != params.channelName'>
+                    and c.channel_name like concat('%', #{params.channelName}, '%')
+                </if>
+                <if test='null != params.chargeRule'>
+                    and c.charge_rule like concat('%', #{params.chargeRule}, '%')
+                </if>
+                <if test='null != params.channelRate'>
+                    and c.channel_rate like concat('%', #{params.channelRate}, '%')
+                </if>
+                <if test='null != params.departmentName and params.departmentName != ""'>
+                    and c.department_name like concat('%', #{params.departmentName}, '%')
+                </if>
+                <if test='null != params.firstLevelBusiness and params.firstLevelBusiness != ""'>
+                    and c.first_level_business = #{params.firstLevelBusiness}
+                </if>
+                <if test='null != params.secondLevelBusiness and params.secondLevelBusiness != ""'>
+                    and c.second_level_business = #{params.secondLevelBusiness}
+                </if>
+                <if test='null != params.thirdLevelBusiness and params.thirdLevelBusiness != ""'>
+                    and c.third_level_business = #{params.thirdLevelBusiness}
+                </if>
+                <if test='null != params.levelBusiness'>
+                    and (c.first_level_business like concat('%', #{params.levelBusiness}, '%')
+                    or c.second_level_business like concat('%', #{params.levelBusiness}, '%')
+                    or c.third_level_business like concat('%', #{params.levelBusiness}, '%'))
+                </if>
+                <if test='null != params.userName'>
+                    and c.username like concat('%', #{params.userName}, '%')
+                </if>
+                <if test='null != params.usernameName'>
+                    and c.username like concat('%', #{params.usernameName}, '%')
+                </if>
+                <include refid="colunmSQL"></include>
+            </trim>
+        </where>
+    </select>
+
+    <sql id="longTimeOrder">
+        (
+            select x1.num from (
+                select t1.ccid, count(1) as num from (
+                (
+                    select DISTINCT c2.ccid, p.sub_channel_id as s1 from dm_channel_promotion p
+                    left join dm_channel_cooperation c2 on p.ccid = c2.ccid
+                    left join dm_channel_product pt on p.product_code = pt.product_code
+                    <where>
+                        <trim prefixOverrides="and|or">
+                            <include refid="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionMapper.colnumSQLToCCID"></include>
+                        </trim>
+                    </where>
+                ) union (
+                    select DISTINCT c2.ccid, p.sub_channel_id as s1 from dm_channel_promotion p
+                    left join dm_channel_cooperation c2 on p.ccid_settlement = c2.ccid
+                    left join dm_channel_product pt on p.product_code = pt.product_code
+                    <where>
+                        <trim prefixOverrides="and|or">
+                            (p.ccid_settlement is not null)
+                            <include refid="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionMapper.colnumSQLToCCID"></include>
+                        </trim>
+                    </where>
+                    )
+                ) t1 group by t1.ccid
+            ) x1 where x1.ccid = c.ccid
+        ) as subChannelNum,
+        (
+            select x.num from (
+                select t2.ccid, count(1) as num from (
+                    (
+                        select DISTINCT c2.ccid, p.product_code as p1, COALESCE(p.application_id,'NULL') as p2 from dm_channel_promotion p
+                        left join dm_channel_cooperation c2 on p.ccid = c2.ccid
+                        left join dm_channel_product pt on p.product_code = pt.product_code
+                        <where>
+                            <trim prefixOverrides="and|or">
+                                <include refid="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionMapper.colnumSQLToCCID"></include>
+                            </trim>
+                        </where>
+                    ) union (
+                        select DISTINCT c2.ccid, p.product_code as p1, COALESCE(p.application_id,'NULL') as p2 from dm_channel_promotion p
+                        left join dm_channel_cooperation c2 on p.ccid_settlement = c2.ccid
+                        left join dm_channel_product pt on p.product_code = pt.product_code
+                        <where>
+                            <trim prefixOverrides="and|or">
+                                (p.ccid_settlement is not null)
+                                <include refid="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionMapper.colnumSQLToCCID"></include>
+                            </trim>
+                        </where>
+                    )
+                ) t2 group by t2.ccid
+            ) x where x.ccid = c.ccid
+        ) as appNum,
+        (
+            select x.num from (
+                select t3.ccid, count(1) as num from (
+                    (
+                        select DISTINCT c2.ccid, p.pid as p3 from dm_channel_promotion p
+                        left join dm_channel_cooperation c2 on p.ccid = c2.ccid
+                        left join dm_channel_product pt on p.product_code = pt.product_code
+                        <where>
+                            <trim prefixOverrides="and|or">
+                                <include refid="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionMapper.colnumSQLToCCID"></include>
+                            </trim>
+                        </where>
+                    ) union (
+                        select DISTINCT c2.ccid, p.pid as p3 from dm_channel_promotion p
+                        left join dm_channel_cooperation c2 on p.ccid_settlement = c2.ccid
+                        left join dm_channel_product pt on p.product_code = pt.product_code
+                        <where>
+                            <trim prefixOverrides="and|or">
+                                (p.ccid_settlement is not null)
+                                <include refid="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionMapper.colnumSQLToCCID"></include>
+                            </trim>
+                        </where>
+                    )
+                ) t3 group by t3.ccid
+            ) x where x.ccid = c.ccid
+        ) as pidNum,
+    </sql>
+
+    <select id="searchAll" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelCooperation">
+        select distinct c.department_code, c.department_name, c.agent_id, c.agent_name, c.channel_id, c.channel_name, c.first_level_business, c.second_level_business, c.third_level_business from dm_channel_cooperation c
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test='params.departmentCode != null and params.departmentCode != ""'>
+                    and c.department_code = #{params.departmentCode}
+                </if>
+                <if test='params.agentId != null'>
+                    and c.agent_id = #{params.agentId}
+                </if>
+                <if test='params.channelId != null'>
+                    and c.channel_id = #{params.channelId}
+                </if>
+                <if test='params.ccid != null and params.ccid != ""'>
+                    and c.ccid = #{params.ccid}
+                </if>
+                <if test='params.channelName != null and params.channelName != ""'>
+                    and c.channel_name = #{params.channelName}
+                </if>
+                <if test='params.agentName != null and params.agentName != ""'>
+                    and c.agent_name = #{params.agentName}
+                </if>
+                <if test='params.chargeRule != null and params.chargeRule != ""'>
+                    and c.charge_rule = #{params.chargeRule}
+                </if>
+                <if test='params.channelRate != null and params.channelRate != ""'>
+                    and c.channel_rate = #{params.channelRate}
+                </if>
+                <if test='params.departmentName != null and params.departmentName != ""'>
+                    and c.department_name = #{params.departmentName}
+                </if>
+                <if test='params.userName != null and params.userName != ""'>
+                    and c.username = #{params.userName}
+                </if>
+                <if test="params.levelBusiness != null and params.levelBusiness != ''">
+                    and (c.first_level_business = #{params.levelBusiness} or c.second_level_business = #{params.levelBusiness} or c.third_level_business = #{params.levelBusiness})
+                </if>
+                <if test='params.firstLevelBusiness != null and params.firstLevelBusiness != ""'>
+                    and c.first_level_business = #{params.firstLevelBusiness}
+                </if>
+                <if test='params.secondLevelBusiness != null and params.secondLevelBusiness != ""'>
+                    and c.second_level_business = #{params.secondLevelBusiness}
+                </if>
+                <if test='params.thirdLevelBusiness != null and params.thirdLevelBusiness != ""'>
+                    and c.third_level_business = #{params.thirdLevelBusiness}
+                </if>
+                <include refid="colunmSQL"/>
+            </trim>
+        </where>
+    </select>
+
+    <select id="migrationCCIDList" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelCooperation">
+        select * from dm_channel_cooperation c
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test='params.departmentCode != null and params.departmentCode != ""'>
+                    and c.department_code = #{params.departmentCode}
+                </if>
+                <if test='params.channelId != null'>
+                    and c.channel_id = #{params.channelId}
+                </if>
+                <include refid="colunmSQL"></include>
+            </trim>
+        </where>
+    </select>
+
+    <select id="migrationChannelList" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelCooperation">
+        select * from dm_channel_cooperation c
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test='params.departmentCode != null and params.departmentCode != ""'>
+                    and c.department_code = #{params.departmentCode}
+                </if>
+                <include refid="colunmSQL"></include>
+            </trim>
+        </where>
+    </select>
+
+    <select id="getChannelCooperationList" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelCooperation">
+        select * from dm_channel_cooperation c
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test='params.agentId != null'>
+                    and c.agent_id = #{params.agentId}
+                </if>
+                <if test='params.departmentCode != null and params.departmentCode != ""'>
+                    and c.department_code = #{params.departmentCode}
+                </if>
+                <if test='params.departmentName != null and params.departmentName != ""'>
+                    and c.department_name = #{params.departmentName}
+                </if>
+                <if test='params.agentName != null and params.agentName != ""'>
+                    and c.agent_name = #{params.agentName}
+                </if>
+                <if test='params.channelId != null'>
+                    and c.channel_id = #{params.channelId}
+                </if>
+                <if test='params.channelName != null and params.channelName != ""'>
+                    and c.channel_name = #{params.channelName}
+                </if>
+                <if test='params.firstLevelBusiness != null and params.firstLevelBusiness != ""'>
+                    and c.first_level_business = #{params.firstLevelBusiness}
+                </if>
+                <if test='params.secondLevelBusiness != null and params.secondLevelBusiness != ""'>
+                    and c.second_level_business = #{params.secondLevelBusiness}
+                </if>
+                <if test='params.thirdLevelBusiness != null and params.thirdLevelBusiness != ""'>
+                    and c.third_level_business = #{params.thirdLevelBusiness}
+                </if>
+                <if test='params.keyword != null and params.keyword != ""'>
+                    and (c.ccid like concat('%', #{params.keyword}, '%') and c.username like concat('%', #{params.keyword}, '%'))
+                </if>
+                <include refid="colunmSQL"></include>
+            </trim>
+        </where>
+    </select>
+
+    <select id="getChannelCooperationPageList" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelCooperation">
+        select * from dm_channel_cooperation c
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test='params.agentId != null'>
+                    and c.agent_id = #{params.agentId}
+                </if>
+                <if test='params.departmentCode != null and params.departmentCode != ""'>
+                    and c.department_code = #{params.departmentCode}
+                </if>
+                <if test='params.departmentName != null and params.departmentName != ""'>
+                    and c.department_name = #{params.departmentName}
+                </if>
+                <if test='params.agentName != null and params.agentName != ""'>
+                    and c.agent_name = #{params.agentName}
+                </if>
+                <if test='params.channelId != null'>
+                    and c.channel_id = #{params.channelId}
+                </if>
+                <if test='params.channelName != null and params.channelName != ""'>
+                    and c.channel_name = #{params.channelName}
+                </if>
+                <if test='params.firstLevelBusiness != null and params.firstLevelBusiness != ""'>
+                    and c.first_level_business = #{params.firstLevelBusiness}
+                </if>
+                <if test='params.secondLevelBusiness != null and params.secondLevelBusiness != ""'>
+                    and c.second_level_business = #{params.secondLevelBusiness}
+                </if>
+                <if test='params.thirdLevelBusiness != null and params.thirdLevelBusiness != ""'>
+                    and c.third_level_business = #{params.thirdLevelBusiness}
+                </if>
+                <if test='params.keyword != null and params.keyword != ""'>
+                    and (c.ccid like concat('%', #{params.keyword}, '%') and c.username like concat('%', #{params.keyword}, '%'))
+                </if>
+                <include refid="colunmSQL"></include>
+            </trim>
+        </where>
+    </select>
+
+    <select id="getAssociated" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelCooperation">
+        select distinct c.charge_rule, c.channel_id, c.channel_name, c.ccid from dm_channel_cooperation c where c.department_code = #{departmentCode}
+    </select>
+    <select id="selectListSQL" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelCooperation">
+        select c.* from dm_channel_cooperation c
+        left join dm_channel ch on c.channel_id = ch.channel_id
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test='params.departmentCode != null and params.departmentCode != ""'>
+                    and c.department_code = #{params.departmentCode}
+                </if>
+                <if test='params.settlementType != null and params.settlementType != ""'>
+                    <if test='params.settlementType == "1"'>
+                        and ch.settlement_type = '1'
+                    </if>
+                    <if test='params.settlementType == "2"'>
+                        and ch.settlement_type = '2'
+                    </if>
+                </if>
+                <if test='params.departmentName != null and params.departmentName != ""'>
+                    and c.department_name = #{params.departmentName}
+                </if>
+                <if test='params.chargeRule != null and params.chargeRule != ""'>
+                    and c.charge_rule = #{params.chargeRule}
+                </if>
+                <if test='params.businessDictId != null'>
+                    and c.business_dict_id = #{params.businessDictId}
+                </if>
+                <if test='params.firstLevelBusiness != null and params.firstLevelBusiness != ""'>
+                    and c.first_level_business = #{params.firstLevelBusiness}
+                </if>
+                <if test='params.secondLevelBusiness != null and params.secondLevelBusiness != ""'>
+                    and c.second_level_business = #{params.secondLevelBusiness}
+                </if>
+                <if test='params.thirdLevelBusiness != null and params.thirdLevelBusiness != ""'>
+                    and c.third_level_business = #{params.thirdLevelBusiness}
+                </if>
+                <if test='params.channelId != null'>
+                    and c.channel_id = #{params.channelId}
+                </if>
+                <if test='params.channelName != null and params.channelName != ""'>
+                    and c.channel_name = #{params.channelName}
+                </if>
+                <if test='params.agentId != null'>
+                    and c.agent_id = #{params.agentId}
+                </if>
+                <if test='params.agentName != null and params.agentName != ""'>
+                    and c.agent_name = #{params.agentName}
+                </if>
+                <if test='params.ccid != null and params.ccid != ""'>
+                    and c.ccid = #{params.ccid}
+                </if>
+            </trim>
+        </where>
+    </select>
+
+    <update id="updateCompanyName">
+        update dm_channel_cooperation set agent_name = #{companyName} where agent_id = #{companyId}
+    </update>
+    <update id="updateCompany">
+        update dm_channel_cooperation set agent_id = #{companyId}, agent_name = #{companyName} where channel_id = #{channelId}
+    </update>
+    <update id="updateDict">
+        update dm_channel_cooperation set first_level_business = #{params.firstLevel}, second_level_business = #{params.secondLevel}, third_level_business = #{params.thirdLevel} where business_dict_id = #{params.id}
+    </update>
+
+    <sql id="colunmSQL">
+        <if test="params.mapAll.size() > 0">
+            and
+            <!-- 有勾选则以勾选为主 CCID-->
+            (
+            <trim prefixOverrides="and|or">
+                <if test="params.mapAll.containsKey(1)">
+                    <!--  勾选部门下的CCID + 负责人是自己的CCID(部门组织中有权限的) -->
+                    c.department_code in
+                    <foreach collection='params.mapAll.get(1)' open='(' close=')' separator=',' item='et' index='i'>
+                        #{et.dmId}
+                    </foreach>
+                </if>
+                <if test="params.mapAll.containsKey(2)">
+                    <!-- 勾选的CCID + 负责人是自己的CCID(部门组织中有权限的) -->
+                    or c.ccid in
+                    <foreach collection='params.mapAll.get(2)' open='(' close=')' separator=',' item='et' index='i'>
+                        #{et.dmId}
+                    </foreach>
+                </if>
+                <if test="params.mapAll.containsKey(3)">
+                    <!-- 勾选的负责人上级CCID + 负责人是自己的CCID(部门组织中有权限的)-->
+                    or c.ccid in
+                    <foreach collection='params.mapAll.get(3)' open='(' close=')' separator=',' item='et' index='i'>
+                        #{et.dmPid}
+                    </foreach>
+                </if>
+                or c.userid = #{user.id}
+            </trim>
+            )
+        </if>
+        <!-- 无勾选则以组织为主 CCID -->
+        and (
+            c.department_code in
+            <foreach collection='params.departmentCodeAllList' open='(' close=')' separator=',' item='dc' index='i'>
+                #{dc}
+            </foreach>
+        )
+    </sql>
+</mapper>

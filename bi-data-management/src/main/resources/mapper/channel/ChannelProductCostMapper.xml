@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stnts.bi.datamanagement.module.channel.mapper.ChannelProductCostMapper">
+    <select id="getAllCCIDByProduct" resultType="com.stnts.bi.datamanagement.module.channel.vo.ChannelClassNode">
+        select DISTINCT p.ccid as id, p.channel_name as channelName, CONCAT('[',p.ccid,']',p.channel_name) as name, '3' as modeType, IFNULL(cp.channel_class_path,'未知') as channelClassStr
+        FROM dm_channel_promotion_all p
+        LEFT JOIN dm_channel_class_cooperation cp ON (p.department_code = cp.department_code and (p.ccid = cp.mode_id or p.channel_id = cp.mode_id or p.charge_rule = cp.mode_id))
+        WHERE p.product_code = #{productCode} and p.flag = 1
+    </select>
+    <!-- 加了 or 场景 yifan 20211130-->
+    <select id="getCCIDCostExt" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelCooperation">
+        select distinct a.ccid, a.channel_name, IFNULL(cp.channel_class_path,'未知') as channelClassStr from dm_channel_promotion_all a
+        left join dm_channel_class_cooperation cp on (a.department_code = cp.department_code and (a.ccid = cp.mode_id or a.channel_id = cp.mode_id or a.charge_rule = cp.mode_id))
+        left join dm_channel_product_cost_cooperation cc on (cc.mode_id = a.ccid
+            or (select IFNULL(concat(',', GROUP_CONCAT(DISTINCT cs.id), ','), 'NULL') from dm_channel_class cs where concat(',', IFNULL(cs.node_id_path, ''), ',', cs.id, ',') like concat('%,',cc.mode_id,',%')) regexp IF(cc.mode_id = '-1','.*',concat(',', cp.channel_class_id, ',')))
+            or (select IFNULL(concat(',', GROUP_CONCAT(DISTINCT k1.ccid), ','), 'NULL') FROM dm_channel_promotion_all k1 LEFT JOIN dm_channel_class_cooperation k2 ON (k1.department_code = k2.department_code and (k1.ccid = k2.mode_id or k1.channel_id = k2.mode_id or k1.charge_rule = k2.mode_id)) WHERE 1=1 and k1.product_code = #{params.productCode} and k1.flag = 1 and k2.channel_class_path is null) regexp IF(cc.mode_id = '0', concat(',', a.ccid, ','), 'NULL0')
+        left join dm_channel_product_cost c on c.id = cc.channel_product_cost_id and c.product_code = a.product_code
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test='params.productCode != null and params.productCode != ""'>
+                    and a.product_code = #{params.productCode}
+                </if>
+                <if test='params.costId != null and params.costId != ""'>
+                    and c.id = #{params.costId}
+                </if>
+                <if test='params.costIdNo != null and params.costIdNo != ""'>
+                    and c.id != #{params.costIdNo}
+                </if>
+                <if test="params.selectByChannelClass != null and params.selectByChannelClass.size() > 0">
+                    and cp.channel_class_id in
+                    <foreach collection='params.selectByChannelClass' open='(' close=')' separator=',' item='item'>
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="params.selectByCCID != null and params.selectByCCID.size() > 0">
+                    and a.ccid in
+                    <foreach collection='params.selectByCCID' open='(' close=')' separator=',' item='item'>
+                        #{item}
+                    </foreach>
+                </if>
+                <if test='params.OnlyNo != null and params.OnlyNo != ""'>
+                    and cp.channel_class_path is null
+                </if>
+                and c.id is not null
+                and a.flag = 1
+            </trim>
+        </where>
+    </select>
+    <select id="countByProductCode" resultType="java.lang.Long">
+        select count(cc.id) from dm_channel_product_cost_cooperation cc
+        left join dm_channel_product_cost c on cc.channel_product_cost_id = c.id
+        where c.product_code = #{productCode} and c.id != #{costId}
+    </select>
+</mapper>

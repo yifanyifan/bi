@@ -1,0 +1,28 @@
+## 可选配置
+# 是否在日志中显示执行的SQL
+showSql = true
+# 是否格式化显示的SQL
+formatSql = false
+# 是否显示SQL参数
+showParams = true
+
+## 基本配置信息
+[clickhouse21]
+url = jdbc:clickhouse://clickhouse-group02.stnts.com:8123
+username = bi_sdk
+password = KVv6$D!or@RKmTy!
+driver = ru.yandex.clickhouse.ClickHouseDriver
+# 最小闲置连接数
+minimumIdle = 10
+# 连接池中允许的最大连接数。缺省值：10；推荐的公式：((core_count * 2) + effective_spindle_count)
+maximumPoolSize = 100
+
+[clickhouse]
+url = jdbc:clickhouse://clickhouse-group01.stnts.com:8123
+username = default
+password = wdkRwVzO5jaESHck
+driver = ru.yandex.clickhouse.ClickHouseDriver
+# 最小闲置连接数
+minimumIdle = 10
+# 连接池中允许的最大连接数。缺省值：10；推荐的公式：((core_count * 2) + effective_spindle_count)
+maximumPoolSize = 100

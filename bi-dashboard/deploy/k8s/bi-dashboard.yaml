@@ -1,0 +1,51 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: bi
+  name: bi-dashboard
+  labels:
+    app: bi-dashboard
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: bi-dashboard
+  template:
+    metadata:
+      labels:
+        app: bi-dashboard
+    spec:
+      containers:
+        - name: bi-dashboard
+          image: dt-harbor.stnts.com/dt-prod/bi-dashboard:0.1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 18886
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1024Mi
+            requests:
+              cpu: "1"
+              memory: 512Mi
+      imagePullSecrets:
+        - name: k8sonline
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: bi
+  name: bi-dashboard-service
+spec:
+  selector:
+    app: bi-dashboard
+  ports:
+    - protocol: TCP
+      port: 18886
+      targetPort: 18886

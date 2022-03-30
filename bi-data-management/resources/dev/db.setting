@@ -1,0 +1,13 @@
+## 可选配置
+# 是否在日志中显示执行的SQL
+showSql = true
+# 是否格式化显示的SQL
+formatSql = false
+# 是否显示SQL参数
+showParams = true
+
+[oracle]
+url = jdbc:oracle:thin:@10.0.3.2:1521:EAS
+username = bi_user
+password = pqiwZ5r7TATBji6K
+driver = oracle.jdbc.OracleDriver

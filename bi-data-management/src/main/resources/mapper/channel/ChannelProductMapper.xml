@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stnts.bi.datamanagement.module.channel.mapper.ChannelProductMapper">
+    <update id="updateMain">
+        update dm_channel_product set cooperation_main_name = #{params.cooperationMainName} where cooperation_main_id = #{params.id}
+
+    </update>
+    <update id="updateDict">
+        update dm_channel_product set first_level_business = #{params.firstLevel}, second_level_business = #{params.secondLevel}, third_level_business = #{params.thirdLevel} where business_dict_id = #{params.id}
+    </update>
+    <select id="selectListByProduct" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelApplication">
+        select p.department_code as departmentCodeParam, p.department_name as departmentNameParam, p.product_code as productCodeParam, p.product_name as productNameParam, a.id, a.application_name
+        from dm_channel_product p
+        left join dm_channel_application a on (concat(',', a.id, ',') regexp concat(',', replace(p.application_ids, ',',',|,'), ','))
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                and
+                <foreach collection='paramList' separator=' or ' item='param' index='i'>
+                    (
+                        (p.department_name = #{param.promoteDepartmentName} or concat(',', IFNULL(p.sale_department_code, ''), ',') like concat('%,', #{param.promoteDepartmentCode}, ',%'))
+                            and p.product_code = #{param.productCode} and p.product_name = #{param.productName}
+                        <if test="param.applicationName != null and param.applicationName != ''">
+                            and a.application_name = #{param.applicationName}
+                        </if>
+                        <if test="param.applicationName == null or param.applicationName == ''">
+                            and a.application_name is null
+                        </if>
+                    )
+                </foreach>
+            </trim>
+        </where>
+    </select>
+
+    <select id="listProduct" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelProduct">
+        select pt.*
+        from dm_channel_product pt where 1 = 1
+        <if test='null != params.cooperationMainId and "" != params.cooperationMainId'>
+            and pt.cooperation_main_id = #{params.cooperationMainId}
+        </if>
+        <if test='null != params.cooperationMainName and "" != params.cooperationMainName'>
+            and pt.cooperation_main_name = #{params.cooperationMainName}
+        </if>
+        <if test='null != params.departmentCode and "" != params.departmentCode'>
+            and pt.department_code = #{params.departmentCode}
+        </if>
+        <if test='null != params.departmentName and "" != params.departmentName'>
+            and pt.department_name = #{params.departmentName}
+        </if>
+        <if test='null != params.productCode and "" != params.productCode'>
+            and pt.product_code = #{params.productCode}
+        </if>
+        <if test='null != params.keyword and params.keyword != ""'>
+            <bind name='key' value="'%' + params.keyword + '%'"/>
+            and (pt.department_code like #{key} or pt.department_name like #{key} or pt.cooperation_main_id like #{key} or pt.cooperation_main_name like #{key} or pt.product_name like #{key} or pt.product_code like #{key} or pt.username = #{key})
+        </if>
+        <if test='params.departmentCodeAllList != null and params.departmentCodeAllList.size() > 0'>
+            and pt.department_code in
+            <foreach collection='params.departmentCodeAllList' open='(' close=')' separator=',' item='dc' index='i'>
+                #{dc}
+            </foreach>
+        </if>
+        order by pt.id desc
+    </select>
+
+    <select id="listProductToOrder" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelProduct">
+        select pt.*, (
+            select count(distinct c.ccid) from dm_channel_promotion p
+            left join dm_channel_cooperation c on p.ccid = c.ccid
+            <where>
+                <trim suffixOverrides="AND | OR" prefix="1=1">
+                    and p.product_code = pt.product_code
+                    <include refid="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionMapper.colnumSQL"></include>
+                </trim>
+            </where>
+        ) as ccidNum,
+        (
+            select count(distinct p.pid) from dm_channel_promotion p
+            left join dm_channel_cooperation c on p.ccid = c.ccid
+            <where>
+                <trim suffixOverrides="AND | OR" prefix="1=1">
+                    and p.product_code = pt.product_code
+                    <include refid="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionMapper.colnumSQL"></include>
+                </trim>
+            </where>
+        ) as pidNum
+        from dm_channel_product pt where 1 = 1
+        <if test='null != params.cooperationMainId and "" != params.cooperationMainId'>
+            and pt.cooperation_main_id = #{params.cooperationMainId}
+        </if>
+        <if test='null != params.cooperationMainName and "" != params.cooperationMainName'>
+            and pt.cooperation_main_name = #{params.cooperationMainName}
+        </if>
+        <if test='null != params.departmentCode and "" != params.departmentCode'>
+            and pt.department_code = #{params.departmentCode}
+        </if>
+        <if test='null != params.departmentName and "" != params.departmentName'>
+            and pt.department_name = #{params.departmentName}
+        </if>
+        <if test='null != params.keyword and params.keyword != ""'>
+            <bind name='key' value="'%' + params.keyword + '%'"/>
+            and (pt.department_code like #{key} or pt.department_name like #{key} or pt.cooperation_main_id like #{key} or pt.cooperation_main_name like #{key} or pt.product_name like #{key} or pt.product_code like #{key} or pt.username = #{key})
+        </if>
+        <if test='params.departmentCodeAllList != null and params.departmentCodeAllList.size() > 0'>
+            and pt.department_code in
+            <foreach collection='params.departmentCodeAllList' open='(' close=')' separator=',' item='dc' index='i'>
+                #{dc}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="selectListProduct" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelProduct">
+        select p.* from dm_channel_product p
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test='null != params.keyword and params.keyword != ""'>
+                    <bind name='key' value="'%' + params.keyword + '%'"/>
+                    and (p.department_code like #{key} or p.department_name like #{key} or concat(',', IFNULL(p.sale_department_code, ''), ',') like concat('%,', #{params.keyword}, ',%'))
+                </if>
+            </trim>
+        </where>
+    </select>
+
+    <select id="selectListByAppId" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelProduct">
+        select p.* from dm_channel_product p
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test="params != null and params != ''">
+                    and concat(',', p.application_ids, ',') like concat('%,', #{params}, ',%')
+                </if>
+            </trim>
+        </where>
+    </select>
+
+    <select id="getOneByParam" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelProduct">
+        select p.* from dm_channel_product p where (p.department_code = #{departmentCode} or concat(',', IFNULL(p.sale_department_code, ''), ',') like concat('%,', #{departmentCode}, ',%')) and p.product_code = #{productCode}
+    </select>
+    <select id="getOneByParamList" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelProduct">
+        select p.* from dm_channel_product p where (p.department_code = #{departmentCode} or concat(',', IFNULL(p.sale_department_code, ''), ',') like concat('%,', #{departmentCode}, ',%'))
+        <if test="productCodeList != null and productCodeList.size() > 0">
+            and p.product_code in
+            <foreach collection='productCodeList' open='(' close=')' separator=',' item='item'>
+                #{item}
+            </foreach>
+        </if>
+    </select>
+    <select id="getDeleteSaleDepartCount" resultType="java.lang.String">
+        select GROUP_CONCAT(DISTINCT p.pid) from dm_channel_promotion p
+        left join dm_channel_cooperation c on p.ccid = c.ccid
+        left join dm_channel_product pt on p.product_code = pt.product_code
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test='channelProductDB.departmentCode != null and channelProductDB.departmentCode != ""'>
+                    and c.department_code != #{channelProductDB.departmentCode}
+                </if>
+                <if test='channelProductDB.productCode != null and channelProductDB.productCode != ""'>
+                    and p.product_code = #{channelProductDB.productCode}
+                </if>
+                <if test="saleDepartmentCodeDBList != null and saleDepartmentCodeDBList.size() > 0">
+                    and c.department_code in
+                    <foreach collection='saleDepartmentCodeDBList' open='(' close=')' separator=',' item='item'>
+                        #{item}
+                    </foreach>
+                </if>
+            </trim>
+        </where>
+    </select>
+</mapper>

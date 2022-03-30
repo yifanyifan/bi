@@ -1,0 +1,52 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: bi
+  name: bi-sdk
+  labels:
+    app: bi-sdk
+spec:
+  replicas: 2
+  minReadySeconds: 20
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: bi-sdk
+  template:
+    metadata:
+      labels:
+        app: bi-sdk
+    spec:
+      containers:
+        - name: bi-sdk
+          image: dt-harbor.stnts.com/dt-prod/bi-sdk:0.6
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 18883
+          resources:
+            limits:
+              cpu: "4"
+              memory: 4096Mi
+            requests:
+              cpu: "2"
+              memory: 2048Mi
+      imagePullSecrets:
+        - name: k8sonline
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: bi
+  name: bi-sdk-service
+spec:
+  selector:
+    app: bi-sdk
+  ports:
+    - protocol: TCP
+      port: 18883
+      targetPort: 18883

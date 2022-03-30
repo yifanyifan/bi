@@ -1,0 +1,825 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionMapper">
+
+    <select id="searchList" resultType="com.stnts.bi.datamanagement.module.channel.vo.ChannelPromotionVO">
+        select DISTINCT c.department_code, c.department_name, c.agent_id, c.agent_name, c.channel_id, c.channel_name,
+        cl.sub_channel_id, cl.sub_channel_name,
+        p.product_code, pt.product_name, p.application_id, a.application_name
+        from dm_channel_promotion p
+        left join dm_channel_application a on p.application_id = a.id
+        left join dm_channel_product pt on p.product_code = pt.product_code
+        left join dm_channel_child cl on p.sub_channel_id = cl.sub_channel_id
+        left join dm_channel_cooperation c on p.ccid = c.ccid
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test="params.departmentCode !=null and params.departmentCode !='' ">
+                    and c.department_code = #{params.departmentCode}
+                </if>
+                <if test="params.agentId !=null and params.agentId !='' ">
+                    and c.agent_id = #{params.agentId}
+                </if>
+                <if test="params.channelId !=null and params.channelId !='' ">
+                    and c.channel_id = #{params.channelId}
+                </if>
+                <if test="params.subChannelId !=null and params.subChannelId !='' ">
+                    and cl.sub_channel_id = #{params.subChannelId}
+                </if>
+                <if test="params.pid !=null and params.pid !='' ">
+                    and p.pid = #{params.pid}
+                </if>
+                <if test="params.pidAlias !=null and params.pidAlias !='' ">
+                    and p.pid_alias = #{params.pidAlias}
+                </if>
+                <if test="params.ccid !=null and params.ccid !='' ">
+                    and p.ccid = #{params.ccid}
+                </if>
+                <if test="params.channelName !=null and params.channelName !='' ">
+                    and c.channel_name = #{params.channelName}
+                </if>
+                <if test="params.subChannelName !=null and params.subChannelName !='' ">
+                    and cl.sub_channel_name = #{params.subChannelName}
+                </if>
+                <if test="params.departmentName !=null and params.departmentName !='' ">
+                    and c.department_name = #{params.departmentName}
+                </if>
+                <if test="params.productName !=null and params.productName !='' ">
+                    and (pt.product_name = #{params.productName} or a.application_name = #{params.productName})
+                </if>
+                <if test="params.mediumName !=null and params.mediumName !='' ">
+                    and m.name = #{params.mediumName}
+                </if>
+                <if test="params.extra !=null and params.extra !='' ">
+                    and p.extra like '%'+${params.extra}+'%'
+                </if>
+                <if test="params.username !=null and params.username !='' ">
+                    and p.username = #{params.username}
+                </if>
+                <if test='params.channelApplicationList != null and params.channelApplicationList.size() > 0'>
+                    and
+                    <foreach collection='params.channelApplicationList' item='ca' open='(' close=')' separator=' or '>
+                        (
+                        <if test='ca.productCodeParam != null and ca.productCodeParam != ""'>
+                            p.product_code = #{ca.productCodeParam}
+                        </if>
+                        and p.application_id
+                        <if test='ca.id != null and ca.id != ""'>
+                            = #{ca.id}
+                        </if>
+                        <if test='ca.id == null or ca.id == ""'>
+                            is null
+                        </if>
+                        )
+                    </foreach>
+                </if>
+                <include refid="colnumSQL"></include>
+            </trim>
+        </where>
+    </select>
+
+    <update id="updateApplicationIdToBlank">
+        update dm_channel_promotion set application_id = null
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                and application_id in
+                <foreach collection='param' open='(' close=')' separator=',' item='item'>
+                    #{item}
+                </foreach>
+            </trim>
+        </where>
+    </update>
+
+    <update id="updateApplicationIdToBlankHistory">
+        update dm_channel_promotion_all set application_id = null
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                and application_id in
+                <foreach collection='param' open='(' close=')' separator=',' item='item'>
+                    #{item}
+                </foreach>
+            </trim>
+        </where>
+    </update>
+
+    <!--select p.ccid, count(distinct p.sub_channel_id) number from dm_channel_promotion p
+        left join dm_channel_product pt on p.product_code = pt.product_code
+        left join dm_channel_cooperation c on p.ccid = c.ccid
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test="params.ccidList != null and params.ccidList.size() > 0">
+                    and p.ccid in
+                    <foreach collection='params.ccidList' open='(' close=')' separator=',' item='item'>
+                        #{item}
+                    </foreach>
+                </if>
+                <include refid="colnumSQL"></include>
+            </trim>
+        </where>
+        group by p.ccid-->
+    <select id="countSubChannelBatch" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelCooperation">
+        select t1.ccid, count(1) as number from (
+            (
+                select DISTINCT c.ccid, p.sub_channel_id as s1 from dm_channel_promotion p
+                left join dm_channel_cooperation c on p.ccid = c.ccid
+                left join dm_channel_product pt on p.product_code = pt.product_code
+                <where>
+                    <trim prefixOverrides="and|or">
+                        <if test="params.ccidList != null and params.ccidList.size() > 0">
+                            and p.ccid in
+                            <foreach collection='params.ccidList' open='(' close=')' separator=',' item='item'>
+                                #{item}
+                            </foreach>
+                        </if>
+                        <include refid="colnumSQL"></include>
+                    </trim>
+                </where>
+            ) union (
+                select DISTINCT c.ccid, p.sub_channel_id as s1 from dm_channel_promotion p
+                left join dm_channel_cooperation c on p.ccid_settlement = c.ccid
+                left join dm_channel_product pt on p.product_code = pt.product_code
+                <where>
+                    <trim prefixOverrides="and|or">
+                        (p.ccid_settlement is not null)
+                        <if test="params.ccidList != null and params.ccidList.size() > 0">
+                            and p.ccid_settlement in
+                            <foreach collection='params.ccidList' open='(' close=')' separator=',' item='item'>
+                                #{item}
+                            </foreach>
+                        </if>
+                        <include refid="colnumSQL"></include>
+                    </trim>
+                </where>
+            )
+        ) t1 group by t1.ccid
+    </select>
+
+    <!--select p.ccid, count(distinct p.product_code, COALESCE(p.application_id,'NULL')) number from
+    dm_channel_promotion p
+    left join dm_channel_product pt on p.product_code = pt.product_code
+    left join dm_channel_cooperation c on p.ccid = c.ccid
+    <where>
+        <trim suffixOverrides="AND | OR" prefix="1=1">
+            <if test="params.ccidList != null and params.ccidList.size() > 0">
+                and p.ccid in
+                <foreach collection='params.ccidList' open='(' close=')' separator=',' item='item'>
+                    #{item}
+                </foreach>
+            </if>
+            <include refid="colnumSQL"></include>
+        </trim>
+    </where>
+    group by p.ccid-->
+    <select id="countAppBatch" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelCooperation">
+        select t2.ccid, count(1) as number from (
+            (
+                select DISTINCT c.ccid, p.product_code as p1, COALESCE(p.application_id,'NULL') as p2 from dm_channel_promotion p
+                left join dm_channel_cooperation c on p.ccid = c.ccid
+                left join dm_channel_product pt on p.product_code = pt.product_code
+                <where>
+                    <trim prefixOverrides="and|or">
+                        <if test="params.ccidList != null and params.ccidList.size() > 0">
+                            and p.ccid in
+                            <foreach collection='params.ccidList' open='(' close=')' separator=',' item='item'>
+                                #{item}
+                            </foreach>
+                        </if>
+                        <include refid="colnumSQL"></include>
+                    </trim>
+                </where>
+            ) union (
+                select DISTINCT c.ccid, p.product_code as p1, COALESCE(p.application_id,'NULL') as p2 from dm_channel_promotion p
+                left join dm_channel_cooperation c on p.ccid_settlement = c.ccid
+                left join dm_channel_product pt on p.product_code = pt.product_code
+                <where>
+                    <trim prefixOverrides="and|or">
+                        (p.ccid_settlement is not null)
+                        <if test="params.ccidList != null and params.ccidList.size() > 0">
+                            and p.ccid_settlement in
+                            <foreach collection='params.ccidList' open='(' close=')' separator=',' item='item'>
+                                #{item}
+                            </foreach>
+                        </if>
+                        <include refid="colnumSQL"></include>
+                    </trim>
+                </where>
+            )
+        ) t2 group by t2.ccid
+    </select>
+
+    <!--select p.ccid, count(distinct p.pid) number from dm_channel_promotion p
+    left join dm_channel_product pt on p.product_code = pt.product_code
+    left join dm_channel_cooperation c on p.ccid = c.ccid
+    <where>
+        <trim suffixOverrides="AND | OR" prefix="1=1">
+            <if test="params.ccidList != null and params.ccidList.size() > 0">
+                and p.ccid in
+                <foreach collection='params.ccidList' open='(' close=')' separator=',' item='item'>
+                    #{item}
+                </foreach>
+            </if>
+            <include refid="colnumSQL"></include>
+        </trim>
+    </where>
+    group by p.ccid-->
+    <select id="countPidByCcidBatch" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelCooperation">
+        select t3.ccid, count(1) as number from (
+            (
+                select DISTINCT c.ccid, p.pid as p3 from dm_channel_promotion p
+                left join dm_channel_cooperation c on p.ccid = c.ccid
+                left join dm_channel_product pt on p.product_code = pt.product_code
+                <where>
+                    <trim prefixOverrides="and|or">
+                        <if test="params.ccidList != null and params.ccidList.size() > 0">
+                            and p.ccid in
+                            <foreach collection='params.ccidList' open='(' close=')' separator=',' item='item'>
+                                #{item}
+                            </foreach>
+                        </if>
+                        <include refid="colnumSQL"></include>
+                    </trim>
+                </where>
+            ) union (
+                select DISTINCT c.ccid, p.pid as p3 from dm_channel_promotion p
+                left join dm_channel_cooperation c on p.ccid_settlement = c.ccid
+                left join dm_channel_product pt on p.product_code = pt.product_code
+                <where>
+                    <trim prefixOverrides="and|or">
+                        (p.ccid_settlement is not null)
+                        <if test="params.ccidList != null and params.ccidList.size() > 0">
+                            and p.ccid_settlement in
+                            <foreach collection='params.ccidList' open='(' close=')' separator=',' item='item'>
+                                #{item}
+                            </foreach>
+                        </if>
+                        <include refid="colnumSQL"></include>
+                    </trim>
+                </where>
+            )
+        ) t3 group by t3.ccid
+    </select>
+
+    <select id="countPidHistoryByCcidBatch"
+            resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelCooperation">
+        select p.ccid, count(distinct p.pid) number from dm_channel_promotion_history p
+        left join dm_channel_product pt on p.product_code = pt.product_code
+        left join dm_channel_promotion_history c on p.id = c.id
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test="params.ccidList != null and params.ccidList.size() > 0">
+                    and p.ccid in
+                    <foreach collection='params.ccidList' open='(' close=')' separator=',' item='item'>
+                        #{item}
+                    </foreach>
+                </if>
+                <include refid="colnumSQL"></include>
+            </trim>
+        </where>
+        group by p.ccid
+    </select>
+
+    <select id="getChannelPromotionList"
+            resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelPromotion">
+        select p.* from dm_channel_promotion p
+        left join dm_channel_product pt on p.product_code = pt.product_code
+        left join dm_channel_cooperation c on p.ccid = c.ccid
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test="params.pidList !=null and params.pidList.size() > 0 ">
+                    and p.pid in
+                    <foreach collection='params.pidList' open='(' close=')' separator=',' item='pid' index='i'>
+                        #{params.pid}
+                    </foreach>
+                </if>
+                <if test="params.subChannelId !=null and params.subChannelId !='' ">
+                    and p.sub_channel_id = #{params.subChannelId}
+                </if>
+                <if test="params.productCode !=null and params.productCode !='' ">
+                    and p.product_code = #{params.productCode}
+                </if>
+                <if test="params.applicationId !=null and params.applicationId !='' ">
+                    and p.application_id = #{params.applicationId}
+                </if>
+                <if test="params.mediumId !=null and params.mediumId !='' ">
+                    and p.medium_id = #{params.mediumId}
+                </if>
+                <if test="params.ccid !=null and params.ccid !='' ">
+                    and p.ccid = #{params.ccid}
+                </if>
+                <if test="params.pid !=null and params.pid !='' ">
+                    and p.pid = #{params.pid}
+                </if>
+                <if test="params.agentId != null and params.channelId != null">
+                    and EXISTS (select 1 FROM dm_channel_cooperation cp where cp.ccid = p.ccid
+                    <if test="params.agentId !=null">
+                        and c.agent_id = #{params.agentId}
+                    </if>
+                    <if test="params.channelId !=null">
+                        and c.channel_id = #{params.channelId}
+                    </if>
+                    )
+                </if>
+                <!-- 有权限的PID -->
+                <include refid="colnumSQL"></include>
+            </trim>
+        </where>
+    </select>
+
+    <!-- 内结ccid 对应 pid 权限自动可见（存在ccid不可见，但pid可见情况） -->
+    <select id="getListByCond" resultType="com.stnts.bi.datamanagement.module.channel.vo.ChannelPromotionVO">
+        select p.*, CONCAT(DATE_FORMAT(p.check_start_date,'%Y-%m-%d'), '~', DATE_FORMAT(p.check_end_date,'%Y-%m-%d')) as
+        checkDateStr,
+        c.agent_id, c.agent_name, c.channel_id, c.channel_name, c.department_code, c.department_name,
+        dc.department_name as channelDepartmentName, IF(dc.secret_type = 1,'共享', '私有') as channelSecretTypeStr,
+        d.sub_channel_name,
+        pt.product_name, aa.application_name, CONCAT(pt.product_name, '(', pt.product_code, ')',
+        IF(aa.application_name is not null, CONCAT('/', aa.application_name), '')) as productNameAndApplicationName,
+        pp.pp_name as promotionPositionName,
+        (select count(distinct h.ccid) from dm_channel_promotion_history h where h.pid = p.pid) as ccidHistoryNum
+        from dm_channel_promotion p
+        left join dm_channel_promotion_position pp on pp.pp_id = p.pp_id
+        left join dm_channel_medium m on p.medium_id = m.id
+        left join dm_channel_child d on p.sub_channel_id = d.sub_channel_id
+        left join dm_channel dc on dc.channel_id = d.channel_id
+        left join dm_channel_product pt on p.product_code = pt.product_code
+        left join dm_channel_cooperation c on p.ccid = c.ccid
+        left join dm_channel_application aa on aa.id = p.application_id
+        <where>
+            <!-- 2022-02-22 by yf -->
+            <!--<if test='null != params.keyword and "" != params.keyword'>
+                <bind name='key' value="'%' + params.keyword + '%'"/>
+                (p.ccid_settlement like #{key}) or
+            </if>-->
+            (<trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test='params.historyCCID != null and params.historyCCID != ""'>
+                    and EXISTS(select 1 from dm_channel_promotion_history ph where ph.pid = p.pid and ph.ccid like concat('%', #{params.historyCCID}, '%'))
+                </if>
+                <if test='null != params.subChannelId'>
+                    and p.sub_channel_id = #{params.subChannelId}
+                </if>
+                <if test='params.subChannelName !=  null and params.subChannelName != ""'>
+                    and d.sub_channel_name like concat('%', #{params.subChannelName}, '%')
+                </if>
+                <if test='null != params.productCode'>
+                    and p.product_code like concat('%', #{params.productCode}, '%')
+                </if>
+                <if test='null != params.pidList and params.pidList.size() > 0'>
+                    and p.pid in
+                    <foreach collection='params.pidList' item='pidItem' open='(' close=')' separator=','>
+                        #{pidItem}
+                    </foreach>
+                </if>
+                <if test='null != params.applicationId'>
+                    and p.application_id = #{params.applicationId}
+                </if>
+                <if test='null != params.mediumId'>
+                    and p.medium_id = #{params.mediumId}
+                </if>
+                <if test='null != params.agentId'>
+                    and c.agent_id = #{params.agentId}
+                </if>
+                <if test='null != params.pid'>
+                    and p.pid like concat('%', #{params.pid}, '%')
+                </if>
+                <if test='null != params.pidAlias'>
+                    and p.pid_alias like concat('%', #{params.pidAlias}, '%')
+                </if>
+                <if test='null != params.ccid'>
+                    and (p.ccid like concat('%', #{params.ccid}, '%') or p.ccid_settlement like concat('%', #{params.ccid}, '%'))
+                </if>
+                <if test='null != params.keyword'>
+                    <bind name='key' value="'%' + params.keyword + '%'"/>
+                    and (p.pid like #{key} or p.ccid like #{key} or p.pid_alias like #{key} or p.extra like #{key} or
+                    dc.channel_name like #{key}
+                    or p.sub_channel_id like #{key} or d.sub_channel_name like #{key} or c.department_name like #{key}
+                    or pp.pp_name like #{key}
+                    or pt.product_code like #{key} or pt.product_name like #{key}
+                    or p.application_id like #{key}
+                    or p.username like #{key} or p.check_start_date like #{key} or
+                    p.check_end_date like #{key} or p.update_time like #{key}
+                    or p.application_id in (select an.id from dm_channel_application an where an.application_name like
+                    #{key})
+                    or (concat(',', p.medium_id, ',') regexp (select concat(',', replace(GROUP_CONCAT(mim.id),
+                    ',',',|,'), ',') FROM dm_channel_medium mim WHERE mim.name like #{key}))
+                    or p.ccid_settlement like #{key}
+                    )
+                </if>
+                <if test='null != params.departmentCode'>
+                    and p.ccid in (select ccid from dm_channel_cooperation where department_code =
+                    #{params.departmentCode})
+                </if>
+                <if test='null != params.channelId'>
+                    and p.sub_channel_id in (select sub_channel_id from dm_channel_child where channel_id =
+                    #{params.channelId})
+                </if>
+                <if test='null != params.channelName'>
+                    and c.channel_name like concat('%', #{params.channelName}, '%')
+                </if>
+                <if test='null != params.departmentName'>
+                    and c.department_name like concat('%', #{params.departmentName}, '%')
+                </if>
+                <if test='null != params.productNameAndApplicationName'>
+                    and (pt.product_name like concat('%', #{params.productNameAndApplicationName}, '%')
+                    or pt.product_code like concat('%', #{params.productNameAndApplicationName}, '%')
+                    or p.application_id in (select an.id from dm_channel_application an where an.application_name like
+                    concat('%', #{params.productNameAndApplicationName}, '%')))
+                </if>
+                <if test='null != params.mediumName and params.mediumName != ""'>
+                    and (concat(',', p.medium_id, ',') regexp (select concat(',', replace(GROUP_CONCAT(mimb.id),
+                    ',',',|,'), ',') FROM dm_channel_medium mimb WHERE mimb.name like concat('%', #{params.mediumName},
+                    '%')))
+                </if>
+                <if test='null != params.extra'>
+                    and p.extra like concat('%', #{params.extra}, '%')
+                </if>
+                <if test='null != params.username'>
+                    and p.username like concat('%', #{params.username}, '%')
+                </if>
+                <if test='null != params.usernameName'>
+                    and p.username like concat('%', #{params.usernameName}, '%')
+                </if>
+                <if test='null != params.createTime'>
+                    and p.create_time = #{params.createTime}
+                </if>
+                <if test='params.channelApplicationList != null and params.channelApplicationList.size() > 0'>
+                    and
+                    <foreach collection='params.channelApplicationList' item='ca' open='(' close=')' separator=' or '>
+                        (
+                        <if test='ca.productCodeParam != null and ca.productCodeParam != ""'>
+                            p.product_code = #{ca.productCodeParam}
+                        </if>
+                        and p.application_id
+                        <if test='ca.id != null and ca.id != ""'>
+                            = #{ca.id}
+                        </if>
+                        <if test='ca.id == null or ca.id == ""'>
+                            is null
+                        </if>
+                        )
+                    </foreach>
+                </if>
+                <include refid="colnumSQL"></include>
+            </trim>)
+        </where>
+    </select>
+
+    <update id="updateByIdSql">
+        UPDATE dm_channel_promotion
+        SET pid              = #{params.pid},
+            pid_alias        = #{params.pidAlias},
+            ccid             = #{params.ccid},
+            sub_channel_id   = #{params.subChannelId},
+            pp_id            = #{params.ppId},
+            application_id   = #{params.applicationId},
+            medium_id        = #{params.mediumId},
+            extra            = #{params.extra},
+            userid           = #{params.userid},
+            username         = #{params.username},
+            product_code     = #{params.productCode},
+            check_start_date = #{params.checkStartDate},
+            check_end_date   = #{params.checkEndDate},
+            ccid_settlement  = #{params.ccidSettlement}
+        WHERE id = #{params.id};
+    </update>
+
+    <select id="selectSubReplace" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelPromotion">
+        select * from dm_channel_promotion where (pid_alias like concat('%',#{param.replaceSource},'%')) and id in
+        <foreach collection='param.idList' open='(' close=')' separator=',' item='item' index='i'>
+            #{item}
+        </foreach>
+    </select>
+
+    <update id="updateSubReplace">
+        update dm_channel_promotion set pid_alias = replace(pid_alias, #{param.replaceSource}, #{param.replaceTarget})
+        where id in
+        <foreach collection='param.idList' open='(' close=')' separator=',' item='item' index='i'>
+            #{item}
+        </foreach>
+    </update>
+
+    <select id="getCCIDListByProduct" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelCooperation">
+        select distinct c.*, ch.settlement_type from dm_channel_promotion p
+        left join dm_channel_product pt on p.product_code = pt.product_code
+        left join dm_channel_cooperation c on p.ccid = c.ccid
+        left join dm_channel ch on c.channel_id = ch.channel_id
+        where p.product_code = #{params.productCode}
+        <include refid="colnumSQL"></include>
+    </select>
+
+    <select id="countCCID" resultType="java.util.Map">
+        select p.product_code as productCode, count(distinct c.ccid) as countCCID from dm_channel_promotion p
+        left join dm_channel_product pt on p.product_code = pt.product_code
+        left join dm_channel_cooperation c on p.ccid = c.ccid
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test="productList != null and productList.size() > 0">
+                    and p.product_code in
+                    <foreach collection='productList' open='(' close=')' separator=',' item='dc' index='i'>
+                        #{dc}
+                    </foreach>
+                </if>
+                <include refid="colnumSQL"></include>
+            </trim>
+        </where>
+        group by p.product_code
+    </select>
+
+    <select id="countPid" resultType="java.util.Map">
+        select p.product_code as productCode, count(distinct p.pid) as countPID from dm_channel_promotion p
+        left join dm_channel_product pt on p.product_code = pt.product_code
+        left join dm_channel_cooperation c on p.ccid = c.ccid
+        <where>
+            <foreach collection="productList" open='(' close=')' separator='or' item='product' index='i'>
+                p.product_code = #{product.productCode}
+            </foreach>
+            <include refid="colnumSQL"></include>
+        </where>
+        group by p.product_code
+    </select>
+
+    <select id="countByCCID" resultType="java.lang.Long">
+        select count(distinct p.pid) from dm_channel_promotion p
+        left join dm_channel_product pt on p.product_code = pt.product_code
+        left join dm_channel_cooperation c on p.ccid = c.ccid
+        where p.ccid = #{params.ccid}
+        <include refid="colnumSQL"></include>
+    </select>
+
+    <select id="getProductAndAppByCcid" resultType="com.stnts.bi.datamanagement.module.channel.vo.AppVO">
+        SELECT distinct p.application_id, p.product_code, pt.product_name FROM dm_channel_promotion p
+        left join dm_channel_cooperation c on p.ccid = c.ccid
+        LEFT JOIN dm_channel_product pt on p.product_code = pt.product_code
+        WHERE pt.product_code is not null and (
+             (
+                ((p.ccid_settlement = #{params.ccid}) or p.ccid = #{params.ccid})
+                <include refid="colnumSQL"/>
+            )
+        )
+    </select>
+
+    <select id="getChannelPromotionGeneral"
+            resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelPromotion">
+        select distinct p.*, c2.channel_id as channelIdSettlement, c2.channel_name as channelNameSettlement from
+        dm_channel_promotion p
+        left join dm_channel_cooperation c on p.ccid = c.ccid
+        left join dm_channel_cooperation c2 on p.ccid_settlement = c2.ccid
+        left join dm_channel_child ci on p.sub_channel_id = ci.sub_channel_id
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test='params.ccid != null and params.ccid != ""'>
+                    and p.ccid = #{params.ccid}
+                </if>
+                <if test='params.channelId != null and params.channelId != ""'>
+                    and c.channel_id = #{params.channelId}
+                </if>
+                <if test='params.subChannelName != null and params.subChannelName != ""'>
+                    and ci.sub_channel_name = #{params.subChannelName}
+                </if>
+                <if test='params.productCode != null and params.productCode != ""'>
+                    and p.product_code = #{params.productCode}
+                </if>
+                <if test='params.pid != null and params.pid != ""'>
+                    and p.pid = #{params.pid}
+                </if>
+            </trim>
+        </where>
+    </select>
+    <select id="countByDict" resultType="java.lang.Integer">
+        select count(p.id) from dm_channel_promotion p
+        left join dm_channel_cooperation co on p.ccid = co.ccid
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test="params.id !=null">
+                    and co.business_dict_id = #{params.id}
+                </if>
+            </trim>
+        </where>
+    </select>
+
+    <select id="countPidByMedium" resultType="java.util.Map">
+        select p.medium_id as mediumId, count(distinct p.pid) as countPid from dm_channel_promotion p
+        left join dm_channel_product pt on p.product_code = pt.product_code
+        left join dm_channel_cooperation c on p.ccid = c.ccid
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test="params.mediumIdLists != null and params.mediumIdLists != ''">
+                    and concat(',', p.medium_id, ',') regexp (select concat(',', replace(#{params.mediumIdLists},
+                    ',',',|,'), ','))
+                </if>
+                and (p.medium_id is not null and p.medium_id != '')
+                <include refid="colnumSQL"></include>
+            </trim>
+        </where>
+        group by p.medium_id
+    </select>
+    <select id="getAssociatedToSubChannel"
+            resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelPromotion">
+        select distinct p.sub_channel_id, p.ccid, c.channel_name, ci.sub_channel_name
+        from dm_channel_promotion p
+                 left join dm_channel_cooperation co on co.ccid = p.ccid
+                 left join dm_channel c on co.channel_id = c.channel_id
+                 left join dm_channel_child ci on p.sub_channel_id = ci.sub_channel_id
+        where co.department_code = #{departmentCode}
+        union all
+        select null, co.ccid, null, '其它'
+        from dm_channel_cooperation co
+                 left join dm_channel_promotion p on co.ccid = p.ccid
+        where co.department_code = #{departmentCode}
+          and p.pid is null
+    </select>
+
+    <select id="settlementChannelList" resultType="com.stnts.bi.datamanagement.module.channel.entity.Channel">
+        select p.* from dm_channel p
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                /*展示当前有权限的内结渠道（自己私有内结渠道+所有共享渠道）*/
+                <if test="params.departmentCode != null and params.departmentCode != ''">
+                    and ((p.department_code = #{params.departmentCode} and p.secret_type = 2) or p.secret_type = 1)
+                </if>
+                <if test="params.departmentCodeAllList != null and params.departmentCodeAllList.size() > 0">
+                    and ((p.department_code in
+                    <foreach collection='params.departmentCodeAllList' open='(' close=')' separator=',' item='item'>
+                        #{item}
+                    </foreach> and p.secret_type = 2) or p.secret_type = 1)
+                </if>
+                <if test="params.settlementType != null and params.settlementType != ''">
+                    and p.settlement_type = #{params.settlementType}
+                </if>
+                <if test="params.channelId != null and params.channelId != ''">
+                    and p.channel_id = #{params.channelId}
+                </if>
+                <if test="params.ccid != null and params.ccid != ''">
+                    and (p.channel_id = (select c.channel_id from dm_channel_cooperation c where c.ccid =
+                    #{params.ccid}))
+                </if>
+            </trim>
+        </where>
+    </select>
+
+    <select id="settlementCCIDList" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelCooperation">
+        select c.* from dm_channel_cooperation c
+        left join dm_channel p on c.channel_id = p.channel_id
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test="params.departmentCode != null and params.departmentCode != ''">
+                    and c.department_code = #{params.departmentCode}
+                </if>
+                <if test="params.productDepartmentCodeList != null and params.productDepartmentCodeList.size() > 0">
+                    and c.department_code in
+                    <foreach collection='params.productDepartmentCodeList' open='(' close=')' separator=',' item='item'>
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="params.settlementType != null and params.settlementType != ''">
+                    and p.settlement_type = #{params.settlementType}
+                </if>
+                <if test="params.channelId != null and params.channelId != ''">
+                    and p.channel_id = #{params.channelId}
+                </if>
+                <if test="params.ccid != null and params.ccid != ''">
+                    and c.ccid = #{params.ccid}
+                </if>
+            </trim>
+        </where>
+    </select>
+    <select id="selectOkSettlement" resultType="java.lang.String">
+        select DISTINCT p.id from dm_channel_promotion p
+        left join dm_channel_product pc on p.product_code = pc.product_code
+        where p.id in
+        <foreach collection='params.pidList' open='(' close=')' separator=',' item='item'>
+            #{item}
+        </foreach>
+        and pc.department_code = (select c.department_code from dm_channel_cooperation c where c.ccid = #{params.ccid});
+    </select>
+    <select id="checkByProDepartmentCode" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelPromotion">
+        select p.* from dm_channel_promotion p
+        left join dm_channel_product pc on p.product_code = pc.product_code
+        where p.ccid = #{params.ccid} and !(pc.department_code = #{params.departmentCode} or (concat(",", #{params.departmentCode}, ",") regexp concat(',', replace(IFNULL(pc.sale_department_code, ''), ',',',|,'), ',')))
+    </select>
+
+    <sql id="colnumSQL">
+        <if test="params.mapAll.size() > 0">
+            and
+            <!-- 有勾选则以勾选为主 PID-->
+            (
+            <trim prefixOverrides="and|or">
+                <if test="params.mapAll.containsKey(1)">
+                    <!-- 该勾选部门下的PID + 用户部门下产品关联的PID + 负责人是自己的PID -->
+                    (c.department_code in
+                    <foreach collection='params.mapAll.get(1)' open='(' close=')' separator=',' item='et' index='i'>
+                        #{et.dmId}
+                    </foreach>
+                    or (select x.department_code from dm_channel_cooperation x where x.ccid = p.ccid_settlement) in
+                    <foreach collection='params.mapAll.get(1)' open='(' close=')' separator=',' item='et' index='i'>
+                        #{et.dmId}
+                    </foreach>
+                    or pt.department_code = #{user.code}
+                    )
+                </if>
+                <if test="params.mapAll.containsKey(2)">
+                    <!-- 勾选的 CCID/内结CCID 下的PID + 用户部门下产品关联的PID + 负责人为自己的PID-->
+                    or (c.ccid in
+                    <foreach collection='params.mapAll.get(2)' open='(' close=')' separator=',' item='et' index='i'>
+                        #{et.dmId}
+                    </foreach>
+                    or p.ccid_settlement in
+                    <foreach collection='params.mapAll.get(2)' open='(' close=')' separator=',' item='et' index='i'>
+                        #{et.dmId}
+                    </foreach>
+                    or pt.department_code = #{user.code}
+                    )
+                </if>
+                <if test="params.mapAll.containsKey(3)">
+                    or (
+                    <!-- 勾选的负责人上级 CCID/内结CCID 下的该负责人的PID + 用户部门下产品关联的PID + 负责人为自己的PID -->
+                    <foreach collection='params.mapAll.get(3)' open='(' close=')' separator=' or ' item='et' index='i'>
+                        (p.ccid = #{et.dmPid} and p.userid = #{et.dmId})
+                    </foreach>
+                    or
+                    <foreach collection='params.mapAll.get(3)' open='(' close=')' separator=' or ' item='et' index='i'>
+                        (p.ccid_settlement = #{et.dmPid} and p.userid = #{et.dmId})
+                    </foreach>
+                    or pt.department_code = #{user.code}
+                    )
+                </if>
+                or p.userid = #{user.id}
+            </trim>
+            )
+        </if>
+        <!-- 无勾选则以组织为主 PID + 自己有内结CCID部门权限的PID + 用户部门下所有产品生成的PID + PID负责人是自己的PID-->
+        and (
+            c.department_code in
+            <foreach collection='params.departmentCodeAllList' open='(' close=')' separator=',' item='dc' index='i'>
+                #{dc}
+            </foreach>
+            or (select x.department_code from dm_channel_cooperation x where x.ccid = p.ccid_settlement) in
+            <foreach collection='params.departmentCodeAllList' open='(' close=')' separator=',' item='dc' index='i'>
+                #{dc}
+            </foreach>
+            or pt.department_code = #{user.code}
+        )
+    </sql>
+
+    <!-- 专供CCID页面 -->
+    <sql id="colnumSQLToCCID">
+        <if test="params.mapAll.size() > 0">
+            and
+            <!-- 有勾选则以勾选为主 PID-->
+            (
+            <trim prefixOverrides="and|or">
+                <if test="params.mapAll.containsKey(1)">
+                    <!-- 该勾选部门下的PID + 用户部门下产品关联的PID + 负责人是自己的PID -->
+                    (c2.department_code in
+                    <foreach collection='params.mapAll.get(1)' open='(' close=')' separator=',' item='et' index='i'>
+                        #{et.dmId}
+                    </foreach>
+                    or (select x.department_code from dm_channel_cooperation x where x.ccid = p.ccid_settlement) in
+                    <foreach collection='params.mapAll.get(1)' open='(' close=')' separator=',' item='et' index='i'>
+                        #{et.dmId}
+                    </foreach>
+                    or pt.department_code = #{user.code}
+                    )
+                </if>
+                <if test="params.mapAll.containsKey(2)">
+                    <!-- 勾选的 CCID/内结CCID 下的PID + 用户部门下产品关联的PID + 负责人为自己的PID-->
+                    or (c2.ccid in
+                    <foreach collection='params.mapAll.get(2)' open='(' close=')' separator=',' item='et' index='i'>
+                        #{et.dmId}
+                    </foreach>
+                    or p.ccid_settlement in
+                    <foreach collection='params.mapAll.get(2)' open='(' close=')' separator=',' item='et' index='i'>
+                        #{et.dmId}
+                    </foreach>
+                    or pt.department_code = #{user.code}
+                    )
+                </if>
+                <if test="params.mapAll.containsKey(3)">
+                    or (
+                    <!-- 勾选的负责人上级 CCID/内结CCID 下的该负责人的PID + 用户部门下产品关联的PID + 负责人为自己的PID -->
+                    <foreach collection='params.mapAll.get(3)' open='(' close=')' separator=' or ' item='et' index='i'>
+                        (p.ccid = #{et.dmPid} and p.userid = #{et.dmId})
+                    </foreach>
+                    or
+                    <foreach collection='params.mapAll.get(3)' open='(' close=')' separator=' or ' item='et' index='i'>
+                        (p.ccid_settlement = #{et.dmPid} and p.userid = #{et.dmId})
+                    </foreach>
+                    or pt.department_code = #{user.code}
+                    )
+                </if>
+                or p.userid = #{user.id}
+            </trim>
+            )
+        </if>
+        <!-- 无勾选则以组织为主 PID + 自己有内结CCID部门权限的PID-->
+        and (
+            c2.department_code in
+            <foreach collection='params.departmentCodeAllList' open='(' close=')' separator=',' item='dc' index='i'>
+                #{dc}
+            </foreach>
+            or (select x.department_code from dm_channel_cooperation x where x.ccid = p.ccid_settlement) in
+            <foreach collection='params.departmentCodeAllList' open='(' close=')' separator=',' item='dc' index='i'>
+                #{dc}
+            </foreach>
+            or pt.department_code = #{user.code}
+        )
+    </sql>
+</mapper>

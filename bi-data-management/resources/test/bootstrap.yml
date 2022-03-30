@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: bi-data-management
+  cloud:
+    nacos:
+      config:
+        server-addr: 10.106.181.156
+        namespace: cd625f51-69f6-4091-8089-62e8c26299c7
+        file-extension: yaml
+        shared-configs:
+          - bi-redis.yaml
+      discovery:
+        server-addr: 10.106.181.156
+        namespace: cd625f51-69f6-4091-8089-62e8c26299c7
+        metadata:
+          management:
+            context-path: ${server.servlet.context-path}/actuator
+  datasource:
+    url: jdbc:mysql://dsspadmin-test:33067/bi_data_management_dev?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8
+    username: bi_dev
+    password: 8A3yBPZeEKlyvWNO
+  #    url: jdbc:mysql://dsspadmin-test:33067/bi_data_management_dev2?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8
+  #    username: bi_dev2
+  #    password: bBnmU0BDLCOUM9Dl
+  profiles:
+    active: test
+
+data-management:
+  setting:
+    appId: orderSystem
+    appSecret: jy0Neokx
+    appId2: orderGeneral # 查询条件必填【通用API】
+    appSecret2: yFsKpMpc
+    uams:
+      interface:
+        address: api.ehome-dev.stnts.com
+        secret: olapM0i0Kj&7y88y
+        appId: OLAP-DEVELOP
+    add-cooperator-url: http://bi-test.stnts.com:8089/add-cooperator
+    youtop-api-host: http://youtop-dsp-backend.test
+    crm-channel-api-host: http://channel-sales-test.stnts.com
+    crm-general-api-host: http://game-crm-manage-test.stnts.com

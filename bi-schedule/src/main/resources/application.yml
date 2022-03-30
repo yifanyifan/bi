@@ -1,0 +1,6 @@
+logging:
+  file: /webser/www/bi-schedule/log/bi-schedule.log
+server:
+  port: 18884
+  servlet:
+    context-path: /schedule

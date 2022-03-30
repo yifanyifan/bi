@@ -1,0 +1,16 @@
+server:
+  port: 18110
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.81.33:8848
+        namespace: 07f4721e-58fd-4257-a2f8-6ec29b5ea247
+  security:
+    user:
+      name: admin
+      password: admin123
+  kafka:
+    bootstrap-servers: yangxiaowen-es-01:9092,yangxiaowen-es-02:9092,yangxiaowen-es-03:9092
+
+

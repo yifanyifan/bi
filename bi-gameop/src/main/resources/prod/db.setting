@@ -1,0 +1,22 @@
+## 可选配置
+# 是否在日志中显示执行的SQL
+showSql = true
+# 是否格式化显示的SQL
+formatSql = false
+# 是否显示SQL参数
+showParams = true
+
+## 基本配置信息
+[clickhouse]
+url = jdbc:clickhouse://clickhouse-bidev.stnts.com:8123/bi_gameop?socket_timeout=300000
+username = bi_gameop
+password = lj4W0JCRrmvRU*GB
+driver = ru.yandex.clickhouse.ClickHouseDriver
+
+#url = jdbc:clickhouse://clickhouse-group01.stnts.com:8123
+#username = readonly
+#password = 1cBT5xrX5fqrzJoJ
+#driver = ru.yandex.clickhouse.ClickHouseDriver
+
+minimumIdle = 10
+maximumPoolSize = 100

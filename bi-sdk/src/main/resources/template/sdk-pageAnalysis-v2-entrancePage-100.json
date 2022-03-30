@@ -1,0 +1,59 @@
+{
+  "id": "sdk-pageAnalysis-v2-entrancePage-100",
+  "chartName":"入口页面",
+  "chartType": "table",
+  "databaseName": "banyan_bi_sdk",
+  "tableName": "view_sdk_app_sdk_web_session",
+  "dimension": [
+    {
+      "name": "page_url",
+      "group": "",
+      "aliasName": "页面url"
+    },
+    {
+      "name": "page_title",
+      "group": "",
+      "aliasName": "页面名称"
+    }
+  ],
+  "measure": [
+    {
+      "name": "downstream_pv",
+      "func": "sum",
+      "contrast": "",
+      "aliasName": "下游贡献量",
+      "order": -1
+    },
+    {
+      "name": "count(distinct session)",
+      "func": "",
+      "contrast": "",
+      "aliasName": "访问次数",
+      "order": -1
+    },
+    {
+      "name": "count(distinct uv)",
+      "func": "",
+      "contrast": "",
+      "aliasName": "访客(UV)",
+      "order": -1
+    },
+    {
+      "name": "sum(online_duration) / 60000 / sum(pv)",
+      "func": "",
+      "contrast": "",
+      "aliasName": "平均页面停留时长(m)",
+      "order": -1
+    },
+    {
+      "name": "sum(is_jump) / count(distinct session)",
+      "func": "",
+      "contrast": "",
+      "aliasName": "跳出率",
+      "order": -1
+    }
+  ],
+  "dashboard": [
+
+  ]
+}

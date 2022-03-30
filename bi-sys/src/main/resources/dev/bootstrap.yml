@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: bi-sys
+  cloud:
+    nacos:
+      config:
+        server-addr: 192.168.81.4:8848
+        namespace: 8a4c4594-30b4-4e2d-a2f4-6365a7d708de
+#        server-addr: 192.168.81.33:8848
+#        namespace: 07f4721e-58fd-4257-a2f8-6ec29b5ea247
+        file-extension: yaml
+        shared-configs:
+        - bi-mysql.yaml
+        - bi-redis.yaml
+      discovery:
+        server-addr: 192.168.81.4:8848
+        namespace: 8a4c4594-30b4-4e2d-a2f4-6365a7d708de
+#        server-addr: 192.168.81.33:8848
+#        namespace: 07f4721e-58fd-4257-a2f8-6ec29b5ea247
+        metadata:
+          management:
+            context-path: ${server.servlet.context-path}/actuator
+
+#配置生效的配置
+  profiles:
+    include:
+      - swagger
+      - dev

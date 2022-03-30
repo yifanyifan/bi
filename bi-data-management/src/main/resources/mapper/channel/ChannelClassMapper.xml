@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stnts.bi.datamanagement.module.channel.mapper.ChannelClassMapper">
+    <update id="updateSubPath">
+        update dm_channel_class set node_id_path = REPLACE(node_id_path, #{nowIdPath}, #{newIdPath}), node_path = REPLACE(node_path, #{nowNamePath}, #{newNamePath});
+    </update>
+
+    <select id="countByCCID" resultType="java.lang.Long">
+        select count(*) from dm_channel_class_cooperation c where concat(',', c.channel_class_id_path, ',') like concat('%,', #{id}, ',%')
+    </select>
+
+    <!-- 版本二-->
+    <select id="getChannelClassIdByProductCode" resultType="java.lang.String">
+        SELECT a.id FROM dm_channel_class a WHERE a.code in (
+            select DISTINCT b.department_code from dm_channel_promotion_all b WHERE b.product_code = #{productCode}
+        ) and parent_id = -1;
+    </select>
+
+    <select id="selectByChannelClassIdList" resultType="com.stnts.bi.datamanagement.module.channel.vo.ChannelClassNode">
+        select c.parent_id, c.id, c.name, IF(c.id is not null and c.name is not null, '2', null) as modeType, #{productCode} as productCode
+        FROM dm_channel_class c
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test="channelClassIdList != null and channelClassIdList.size() > 0">
+                    and c.id in
+                    <foreach collection='channelClassIdList' open='(' close=')' separator=',' item='item'>
+                        #{item}
+                    </foreach>
+                </if>
+            </trim>
+        </where>
+    </select>
+    <select id="ccidListByProductBatch" resultType="com.stnts.bi.datamanagement.module.channel.vo.ChannelClassNode">
+        select DISTINCT cc.channel_class_id, c.ccid as id, c.channel_name as name, IF(c.ccid is not null and c.channel_name is not null, '3', null) as modeType
+        FROM dm_channel_promotion p
+        LEFT JOIN dm_channel_cooperation c ON p.ccid = c.ccid
+        INNER JOIN dm_channel_class_cooperation cc ON (c.department_code = cc.department_code and (c.ccid = cc.mode_id or c.channel_id = cc.mode_id or c.charge_rule = cc.mode_id))
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test="channelClassIdList != null and channelClassIdList.size() > 0">
+                    and cc.channel_class_id in
+                    <foreach collection='channelClassIdList' open='(' close=')' separator=',' item='item'>
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="productCode != null and productCode != ''">
+                    and p.product_code = #{productCode}
+                </if>
+            </trim>
+        </where>
+    </select>
+    <!-- 产品分类 End -->
+
+
+    <select id="getUpLoad" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelClass">
+        SELECT T2.*
+        FROM (
+                 SELECT @r AS _id, (SELECT @r := parent_id FROM dm_channel_class WHERE id = _id) AS parent_id, @l := @l + 1 AS lvl
+                 FROM (SELECT @r := ${id}, @l := 0) vars, dm_channel_class h
+                 WHERE @r &lt;> 0
+             ) T1 JOIN dm_channel_class T2 ON T1._id = T2.id
+        ORDER BY T1.lvl DESC
+    </select>
+    <select id="getDownLoad" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelClass">
+        select c.* from dm_channel_class c where concat(',', c.node_id_path, ',') like concat('%,', #{id}, ',%') or c.id = #{id};
+    </select>
+    <select id="getDownLoadByIdList" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelClass">
+        select c.* from dm_channel_class c
+        <where>
+            <trim suffixOverrides="or" prefix="1=1">
+                <if test="params != null and params.size() > 0">
+                    and (
+                        <foreach collection='params' separator='or' item='item'>
+                            (concat(',', c.node_id_path, ',') like concat('%,', #{item}, ',%') or c.id = #{item})
+                        </foreach>
+                    )
+                </if>
+            </trim>
+        </where>
+    </select>
+    <select id="selectAll" resultType="com.stnts.bi.datamanagement.module.channel.vo.ChannelClassVO">
+        SELECT DISTINCT cc.channel_class_path as channelClassPath, co.department_code as departmentCode,
+        co.department_name as departmentName, co.ccid as ccid, co.channel_name as channelName,
+        co.charge_rule as chargeRule, (
+        SELECT count(distinct p.pid) FROM dm_channel_promotion p
+        left join dm_channel_product pt on p.product_code = pt.product_code
+        left join dm_channel_cooperation c on p.ccid = c.ccid
+        WHERE ((p.ccid = co.ccid or p.ccid_settlement = co.ccid)
+                <include refid="com.stnts.bi.datamanagement.module.channel.mapper.ChannelPromotionMapper.colnumSQL"></include>
+            )
+        ) pidNum, cl.username, cl.create_time as createTime
+        FROM dm_channel_cooperation co
+        left join dm_channel ch on co.channel_id = ch.channel_id
+        left join dm_channel_class_cooperation cc on (co.department_code = cc.department_code and (co.ccid = cc.mode_id or co.channel_id = cc.mode_id or co.charge_rule = cc.mode_id))
+        left join dm_channel_class cl on cc.channel_class_id = cl.id
+        <where>
+            <if test="(params.selectByChargeRule != null and params.selectByChargeRule.size() > 0) || (params.selectByChannel != null and params.selectByChannel.size() > 0) || (params.selectByCCID != null and params.selectByCCID.size() > 0)">
+                <trim prefixOverrides="or" prefix="(" suffix=")">
+                    <if test="params.selectByChargeRule != null and params.selectByChargeRule.size() > 0">
+                        or
+                        <foreach collection='params.selectByChargeRule' open='(' close=')' separator=' or ' item='item'>
+                            (co.department_code = #{item.departmentCode} and co.charge_rule = #{item.modeId})
+                        </foreach>
+                    </if>
+                    <if test="params.selectByChannel != null and params.selectByChannel.size() > 0">
+                        or
+                        <foreach collection='params.selectByChannel' open='(' close=')' separator=' or ' item='item'>
+                            (co.department_code = #{item.departmentCode} and co.channel_id = #{item.modeId})
+                        </foreach>
+                    </if>
+                    <if test="params.selectByCCID != null and params.selectByCCID.size() > 0">
+                        or
+                        <foreach collection='params.selectByCCID' open='(' close=')' separator=' or ' item='item'>
+                            (co.department_code = #{item.departmentCode} and co.ccid = #{item.modeId})
+                        </foreach>
+                    </if>
+                </trim>
+            </if>
+            <if test="params.departmentCode !=null and params.departmentCode !='' ">
+                and co.department_code = #{params.departmentCode}
+            </if>
+            <if test="params.keyword != null and params.keyword != ''">
+                <bind name='key' value="'%' + params.keyword + '%'"/>
+                and (cc.channel_class_path like #{key} or co.department_code like #{key} or co.department_name like #{key} or co.ccid like #{key}
+                    or co.channel_name like #{key} or co.charge_rule like #{key} or cl.username like #{key} or cl.create_time like #{key}
+                    or (SELECT cast(count(1) as char) FROM dm_channel_promotion pr WHERE pr.ccid = co.ccid) = #{params.keyword}
+                )
+            </if>
+
+            <if test="params.departmentCodeAllList != null and params.departmentCodeAllList.size() > 0">
+                and co.department_code in
+                <foreach collection='params.departmentCodeAllList' open='(' close=')' separator=',' item='item'>
+                    #{item}
+                </foreach>
+            </if>
+            and cc.channel_class_path is not null
+        </where>
+        <!-- 20220208 -->
+    </select>
+
+    <select id="getPullList" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelClass">
+        select c.* from dm_channel_class c where c.code = #{params.departmentCode} and c.node_type = 2 order by c.parent_id
+    </select>
+
+    <select id="selectAllList" resultType="com.stnts.bi.datamanagement.module.channel.vo.ChannelClassNode">
+        select cc.* from dm_channel_class cc
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test="params.departmentCodeAllList != null and params.departmentCodeAllList.size() > 0">
+                    and cc.code in
+                    <foreach collection='params.departmentCodeAllList' open='(' close=')' separator=',' item='item'>
+                        #{item}
+                    </foreach>
+                </if>
+            </trim>
+        </where>
+    </select>
+    <select id="selectCountCCIDByLeaf" resultType="com.stnts.bi.datamanagement.module.channel.vo.ChannelClassNode">
+        select x1.channel_class_id, count(DISTINCT coo.ccid) associatedCCIDNum from dm_channel_class_cooperation  x1
+        left join dm_channel_cooperation coo on (coo.department_code = x1.department_code and (coo.ccid = x1.mode_id or coo.channel_id = x1.mode_id or coo.charge_rule = x1.mode_id))
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test="params.departmentCodeAllList != null and params.departmentCodeAllList.size() > 0">
+                    and x1.department_code in
+                    <foreach collection='params.departmentCodeAllList' open='(' close=')' separator=',' item='item'>
+                        #{item}
+                    </foreach>
+                </if>
+            </trim>
+        </where>
+        group by x1.channel_class_id
+    </select>
+</mapper>

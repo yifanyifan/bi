@@ -1,0 +1,31 @@
+{
+  "id": "sdk-pageAnalysis-v2-entrancePage-30",
+  "chartName":"入口页面",
+  "chartType": "table",
+  "databaseName": "banyan_bi_sdk",
+  "tableName": "view_sdk_app_sdk_web_session",
+  "dimension": [
+    {
+      "name": "page_url",
+      "group": "",
+      "aliasName": "页面url"
+    },
+    {
+      "name": "page_title",
+      "group": "",
+      "aliasName": "页面名称"
+    }
+  ],
+  "measure": [
+    {
+      "name": "count(distinct if(user_type=0,uv,null))",
+      "func": "",
+      "contrast": "",
+      "aliasName": "老访客(UV)",
+      "order": -1
+    }
+  ],
+  "dashboard": [
+
+  ]
+}

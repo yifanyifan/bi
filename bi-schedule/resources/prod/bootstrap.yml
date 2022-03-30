@@ -1,0 +1,67 @@
+spring:
+  application:
+    name: bi-schedule
+  cloud:
+    nacos:
+      config:
+        server-addr: nacos.stnts.com:30080
+        namespace: 3535cdb7-afed-432c-bdb5-2d089b25dde7
+        file-extension: yaml
+        shared-configs:
+          - bi-redis.yaml
+      discovery:
+        server-addr: nacos.stnts.com:30080
+        namespace: 3535cdb7-afed-432c-bdb5-2d089b25dde7
+        metadata:
+          management:
+            context-path: ${server.servlet.context-path}/actuator
+  datasource:
+    url: jdbc:clickhouse://clickhouse-group01.stnts.com:8123
+    driver-class-name: ru.yandex.clickhouse.ClickHouseDriver
+    username: default
+    password: wdkRwVzO5jaESHck
+  profiles:
+    active: prod
+
+deduct:
+  setting:
+    appId: orderSystem
+    appSecret: jy0Neokx
+    appId2: orderGeneral # 查询条件必填【通用API】
+    appSecret2: yFsKpMpc
+
+schedule:
+  setting:
+    wutong:
+      interface:
+        address: https://wutongshu.stnts.com/
+        secret: 8XcACidp4q3791yo
+  msg:
+    url: https://dtwx-dev.shengtian.com/msg/web?msg=
+  jdbc:
+    ch:
+      url: jdbc:clickhouse://clickhouse-bidev.stnts.com:8123
+      username: default
+      password: w5cMSULdy9CwkuOD
+    hive:
+      driver: org.apache.hive.jdbc.HiveDriver
+      url: jdbc:hive2://hiveservervip:10005
+      username: hive
+      password: k*jSUV7XOsNh6WaH
+    cjt:
+      url: jdbc:mysql://116.211.100.155:33066/youtop_online_dssp?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8
+      username: Dssp_Setin_conn
+      password: chartdata_@)!#
+    mongo:
+      url: wutongshu01
+      url02: wutongshu02
+      url03: wutongshu03
+      port: 27001
+      username: fas
+      authsource: fas
+      password: OixFVxpORc1HUqv7
+      dbname: fas
+    mysql:
+      url: jdbc:mysql://db-master-datamanagement.stnts.com:33066/bi_data_management?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8
+      username: bi_dm_user
+      password: ylstJOkMcGvDfNY9

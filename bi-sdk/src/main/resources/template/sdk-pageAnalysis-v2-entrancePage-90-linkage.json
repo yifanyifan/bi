@@ -1,0 +1,26 @@
+{
+  "id": "sdk-pageAnalysis-v2-entrancePage-90-linkage",
+  "chartName":"入口页面",
+  "chartType": "table",
+  "databaseName": "banyan_bi_sdk",
+  "tableName": "view_sdk_app_sdk_web_session",
+  "dimension": [
+    {
+      "name": "date",
+      "group": "#(group)",
+      "aliasName": "时间"
+    }
+  ],
+  "measure": [
+    {
+      "name": "sum(is_jump) / count(distinct session)",
+      "func": "",
+      "contrast": "",
+      "aliasName": "跳出率",
+      "order": -1
+    }
+  ],
+  "dashboard": [
+
+  ]
+}

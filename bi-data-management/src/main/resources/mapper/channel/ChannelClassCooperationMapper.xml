@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stnts.bi.datamanagement.module.channel.mapper.ChannelClassCooperationMapper">
+    <select id="selectByDepartment" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelClassCooperation">
+        select c.department_code, c.department_name, c.mode_id, c.mode_type, c.channel_class_path, c.channel_class_id, cl.username, cl.create_time from dm_channel_class_cooperation c
+        left join dm_channel_class cl on c.channel_class_id = cl.id
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test="departmentCodeList != null and departmentCodeList.size() > 0">
+                    and c.department_code in
+                    <foreach collection='departmentCodeList' open='(' close=')' separator=',' item='departmentCode' index='i'>
+                        #{departmentCode}
+                    </foreach>
+                </if>
+            </trim>
+        </where>
+    </select>
+    <select id="searchAll" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelClassCooperation">
+        select distinct c.department_code, c.department_name, c.channel_class_path, c.channel_class_id from dm_channel_class_cooperation c
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test='params.departmentCode != null and params.departmentCode != ""'>
+                    and c.department_code = #{params.departmentCode}
+                </if>
+                <if test='params.channelClassId != null and params.channelClassId != ""'>
+                    and c.channel_class_id = #{params.channelClassId}
+                </if>
+                <if test="params.departmentCodeAllList != null and params.departmentCodeAllList.size() > 0">
+                    and c.department_code in
+                    <foreach collection='params.departmentCodeAllList' open='(' close=')' separator=',' item='item'>
+                        #{item}
+                    </foreach>
+                </if>
+            </trim>
+        </where>
+    </select>
+    <select id="getChannelClassPath" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelClass">
+        select distinct c.* from dm_channel_class_cooperation co
+        left join dm_channel_class c on co.channel_class_id = c.id
+        where co.department_code = #{params.departmentCode} and (co.mode_id = #{params.ccid} or co.mode_id = #{params.channelId} or co.mode_id = #{params.chargeRule})
+    </select>
+    <select id="getRepeatSelect" resultType="com.stnts.bi.datamanagement.module.channel.vo.ChannelClassCooperationVO">
+        select distinct coo.ccid, coo.charge_rule, coo.channel_id, coo.channel_name, x.node_path, x1.mode_id from dm_channel_class_cooperation x1
+        left join dm_channel_class x on x1.channel_class_id = x.id
+        left join dm_channel_cooperation coo on (coo.department_code = x1.department_code and (coo.ccid = x1.mode_id or coo.channel_id = x1.mode_id or coo.charge_rule = x1.mode_id))
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test='params.channelClassId != null and params.channelClassId != ""'>
+                    and x1.channel_class_id != #{params.channelClassId}
+                </if>
+                <if test='params.departmentCode != null and params.departmentCode != ""'>
+                    and coo.department_code = #{params.departmentCode}
+                </if>
+                <if test='params.selectByChargeRule != null and params.selectByChargeRule.size() > 0'>
+                    and coo.charge_rule in
+                    <foreach collection='params.selectByChargeRule' open='(' close=')' separator=',' item='item'>
+                        #{item}
+                    </foreach>
+                </if>
+                <if test='params.selectByChannel != null and params.selectByChannel.size() > 0'>
+                    and coo.channel_id in
+                    <foreach collection='params.selectByChannel' open='(' close=')' separator=',' item='item'>
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="params.selectByCCID != null and params.selectByCCID.size() > 0">
+                    and coo.ccid in
+                    <foreach collection='params.selectByCCID' open='(' close=')' separator=',' item='item'>
+                        #{item}
+                    </foreach>
+                </if>
+            </trim>
+
+        </where>
+
+    </select>
+    <select id="selectByChannelClassId" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelClassCooperation">
+        select cc.* from dm_channel_class_cooperation cc
+        where concat(',', cc.channel_class_id_path, ',') regexp (select concat(',', replace(
+        <foreach collection="params" open="'" close="'" separator=',' item='t'>
+            ${t}
+        </foreach>
+        , ',',',|,'), ','))
+    </select>
+</mapper>

@@ -1,0 +1,15 @@
+SELECT
+    1 as cooperation_type,
+	FNUMBER AS easCode,
+	FNAME_L2 AS companyName,
+	(SELECT wm_concat(distinct CT_CUS_Partner.cfpartnername) FROM EAS.T_SD_SaleContract,EAS.CT_CUS_Partner WHERE FBaseStatus = '4' AND T_BD_Customer.FID = T_SD_SaleContract.FCustomerID AND CT_CUS_Partner.FID = T_SD_SaleContract.cfpartnerid) AS cpName,
+	FMnemonicCode AS cpCode,
+	FIndustryID AS parentIndustry,
+	FAddress AS companyAddress,
+	FIsInternalCompany AS isSelf,
+	CASE WHEN  FTxRegisterNo='1' THEN  null ELSE FTxRegisterNo END AS companyTaxkey,
+	FArtificialPerson AS companyLegal,
+	FUsedStatus AS isApproved,
+	FCreateTime AS createTime,
+	(SELECT FNAME_L2 FROM EAS.T_ORG_BaseUnit WHERE FID = CFADMINORGUNITID ) AS createDepartment,
+	(SELECT wm_concat(FNUMBER) FROM EAS.T_SD_SaleContract WHERE FBaseStatus = '4' AND T_BD_Customer.fid = T_SD_SaleContract.FCustomerID) AS contract_id_set FROM EAS.T_BD_Customer where FNAME_L2 NOT IN ('默认','111','123','测试')

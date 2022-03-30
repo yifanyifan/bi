@@ -1,0 +1,52 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: bi
+  name: bi-admin
+  labels:
+    app: bi-admin
+spec:
+  replicas: 1
+  minReadySeconds: 20
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: bi-admin
+  template:
+    metadata:
+      labels:
+        app: bi-admin
+    spec:
+      containers:
+      - name: bi-admin
+        image: dchub.stnts.com/zhangliang/project/bi-admin:0.1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 18110
+        resources:
+          limits:
+            cpu: "4"
+            memory: 2048Mi
+          requests:
+            cpu: "2"
+            memory: 1024Mi
+      imagePullSecrets:
+        - name: k8sonline
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: bi
+  name: bi-admin-service
+spec:
+  selector:
+    app: bi-admin
+  ports:
+    - protocol: TCP
+      port: 18110
+      targetPort: 18110

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stnts.bi.datamanagement.module.channel.mapper.ChannelProductLabelMapper">
+
+    <select id="selectPageParam" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelProductLabel">
+        select * from dm_channel_product_label l
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                <if test="params.labelArea != null and params.labelArea != ''">
+                    and l.label_area = #{params.labelArea}
+                </if>
+                <if test='params.keyword != null and params.keyword != ""'>
+                    <bind name='key' value="'%' + params.keyword + '%'"/>
+                    and (l.label_area like #{key}
+                    or (case when l.label_level = '1' then '一级' when l.label_level = '2' then '二级' end) like #{key}
+                    or l.label_value like #{key}
+                    or l.username like #{key}
+                    or l.create_time like #{key}
+                    or l.id like #{key}
+                    )
+                </if>
+            </trim>
+        </where>
+    </select>
+    <select id="getUseLabelProduct" resultType="com.stnts.bi.datamanagement.module.channel.entity.ChannelProduct">
+        select p.* from dm_channel_product_label l
+        left join dm_channel_product p on (concat(',', p.product_class, ',', p.product_theme, ',') regexp concat(',', replace(l.id, ',',',|,'), ','))
+        where l.id = #{id} and p.id is not null
+    </select>
+</mapper>

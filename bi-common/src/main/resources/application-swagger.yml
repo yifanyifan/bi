@@ -1,0 +1,10 @@
+#swagger配置
+common:
+  swagger:
+    title: 盛天BI
+    desc: 接口文档
+    url: http://bi.stnts.com
+    version: 1.0
+    username: liang.zhang
+    host: smile
+    email: zhangliang1119@stnts.com

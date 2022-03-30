@@ -1,0 +1,26 @@
+#test表示测试的k8s环境
+server:
+  port: 18110
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 10.106.181.156
+        namespace: cd625f51-69f6-4091-8089-62e8c26299c7
+        metadata:
+          management:
+            context-path: ${server.servlet.context-path}/actuator
+  kafka:
+    bootstrap-servers: yangxiaowen-storm-1:9092,yangxiaowen-storm-2:9092,yangxiaowen-storm-3:9092,yangxiaowen-storm-4:9092,yangxiaowen-storm-5:9092
+  security:
+    user:
+      name: admin
+      password: admin123
+  boot:
+    admin:
+      ui:
+        public-url: http://bi-test.stnts.com:8089/bi-bak/bi-admin/
+        title: BI应用监控
+      discovery:
+        ignored-services:
+        - bi-admin

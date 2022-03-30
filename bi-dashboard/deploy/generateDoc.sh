@@ -1,0 +1,1 @@
+sshpass -p 'f57TIulmhtbp&' scp -r ../doc/bi-dashboard-api.html root@10.0.6.40:/www/bi-dashboard-doc/index.html

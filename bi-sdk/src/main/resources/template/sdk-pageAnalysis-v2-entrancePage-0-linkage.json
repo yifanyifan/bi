@@ -1,0 +1,26 @@
+{
+  "id": "sdk-pageAnalysis-v2-entrancePage-0-linkage",
+  "chartName":"入口页面",
+  "chartType": "table",
+  "databaseName": "banyan_bi_sdk",
+  "tableName": "view_sdk_app_sdk_web_session",
+  "dimension": [
+    {
+      "name": "date",
+      "group": "#(group)",
+      "aliasName": "时间"
+    }
+  ],
+  "measure": [
+    {
+      "name": "downstream_pv",
+      "func": "sum",
+      "contrast": "",
+      "aliasName": "下游贡献量",
+      "order": -1
+    }
+  ],
+  "dashboard": [
+
+  ]
+}

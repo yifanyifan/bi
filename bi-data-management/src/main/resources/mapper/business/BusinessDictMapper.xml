@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stnts.bi.datamanagement.module.business.mapper.BusinessDictMapper">
+    <select id="selectListByDict" resultType="com.stnts.bi.datamanagement.module.business.entity.BusinessDict">
+        select * from dm_business_dict
+        <where>
+            <trim suffixOverrides="AND | OR" prefix="1=1">
+                and
+                <foreach collection='paramList' separator=' or ' item='param' index='i'>
+                    (
+                        root_level = #{param.promoteDepartmentName} and first_level = #{param.firstLevelBusiness} and second_level = #{param.secondLevelBusiness}
+                        and third_level = #{param.thirdLevelBusiness} and DATE_FORMAT(now(), '%Y') BETWEEN year_start and year_end
+                    )
+                </foreach>
+            </trim>
+        </where>
+    </select>
+</mapper>
