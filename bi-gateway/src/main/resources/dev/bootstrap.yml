@@ -9,14 +9,14 @@ spring:
   cloud:
     nacos:
       config:
-        server-addr: 192.168.81.4:8848
-        namespace: 8a4c4594-30b4-4e2d-a2f4-6365a7d708de
+        server-addr: 60.205.176.169:8848
+        namespace: 6bed7004-0aa2-4e7f-963b-1ce7a850235f
         file-extension: yaml
         shared-configs:
           - bi-redis.yaml
       discovery:
-        server-addr: 192.168.81.4:8848
-        namespace: 8a4c4594-30b4-4e2d-a2f4-6365a7d708de
+        server-addr: 60.205.176.169:8848
+        namespace: 6bed7004-0aa2-4e7f-963b-1ce7a850235f
         metadata:
           management:
             context-path: ${server.servlet.context-path}/actuator

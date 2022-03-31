@@ -4,7 +4,7 @@
 	<property name="APP_NAME" value="bi-gateway" />
 	<!--定义日志文件的存储地址 勿在 LogBack 的配置中使用相对路径 -->
 	<springProfile name="dev">
-		<property name="LOG_HOME" value="E:\\logs\\" />
+		<property name="LOG_HOME" value="D:\\logs\\" />
 	</springProfile>
 	<springProfile name="test">
 		<property name="LOG_HOME" value="/webapp/logs/" />

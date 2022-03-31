@@ -41,7 +41,7 @@ public class EasCooperationSchedule {
     /**
      * 每天凌晨六点运行
      */
-    @Scheduled(cron="0 0 5 * * ?")
+    //@Scheduled(cron="0 0 5 * * ?")
 //    @Scheduled(fixedDelay = 100000)
     public void easCooperationSchedule() {
         List<CooperationEas> cooperationEasList = cooperationEasService.list(new QueryWrapper<CooperationEas>().lambda().select(CooperationEas::getEasCode));

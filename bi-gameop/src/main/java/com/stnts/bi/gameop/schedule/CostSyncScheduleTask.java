@@ -37,7 +37,7 @@ public class CostSyncScheduleTask {
 
     private static int SYNC_COUNT = 50000;   //每次同步条数
     //每天 1:20执行
-    @Scheduled(cron = "0 20 1 * * ? ")
+    //@Scheduled(cron = "0 20 1 * * ? ")
     public void schedule(){
         String yesterday = DateUtil.formatDate(DateUtil.yesterday());
         log.info("同步downstream_cost，upstream_cost 数据任务开始>>> : 同步日期 = 【{}】",yesterday);

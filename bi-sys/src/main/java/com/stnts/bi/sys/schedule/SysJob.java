@@ -33,25 +33,25 @@ public class SysJob {
     private OlapMenuService olapMenuService;
 
     //    @Scheduled(cron = "0 0 0/1 * * ?")
-    @Scheduled(cron = "0 0 0/1 * * ?")
+//    @Scheduled(cron = "0 0 0/1 * * ?")
     public void syncProduct() {
         productService.syncProduct();
         log.info("[定时调度]产品线同步");
     }
 
-    @Scheduled(cron = "0 0 0/1 * * ?")
+//    @Scheduled(cron = "0 0 0/1 * * ?")
     public void syncUser() {
         loginService.syncUser();
         log.info("[定时调度]用户同步");
     }
 
-    @Scheduled(cron = "0 0 0/1 * * ?")
+//    @Scheduled(cron = "0 0 0/1 * * ?")
     public void syncDepartment() {
         loginService.syncDepartment();
         log.info("[定时调度]部门同步");
     }
 
-    @Scheduled(cron = "0 0 0/1 * * ?")
+    //@Scheduled(cron = "0 0 0/1 * * ?")
     public void syncOlapMenu() {
         olapMenuService.initMenu();
         log.info("[定时调度]olap一级菜单同步");

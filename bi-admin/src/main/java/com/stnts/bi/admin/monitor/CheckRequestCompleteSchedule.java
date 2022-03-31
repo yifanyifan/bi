@@ -29,7 +29,7 @@ public class CheckRequestCompleteSchedule {
     /**
      * 每分钟执行一次
      */
-    @Scheduled(fixedDelay = 60000)
+    //@Scheduled(fixedDelay = 60000)
     public void checkRequestCompleteSchedule() {
         log.info("checkRequestCompleteSchedule start");
         Map<Object, Object> requestEntries = redisTemplate.opsForHash().entries(MonitorApiLog.requestKey);
