@@ -56,7 +56,7 @@
 		<module>bi-sign</module>
 	</modules>
 
-	<!-- 阿里云maven仓库 -->
+	<!-- 阿里云maven仓库1111 -->
     <repositories>
         <repository>
             <id>public</id>
